@@ -1,0 +1,1094 @@
+[
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Pimentón Alicante",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Comino Alicante",
+    "unidad": "KG",
+    "precio": 5400
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Comino en Grano",
+    "unidad": "KG",
+    "precio": 16500
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Orégano Alicante",
+    "unidad": "KG",
+    "precio": 5400
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Provenzal Alicante",
+    "unidad": "KG",
+    "precio": 5400
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Pimienta Blanca Alicante",
+    "unidad": "KG",
+    "precio": 5400
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Pimienta Blanca en Grano",
+    "unidad": "KG",
+    "precio": 39500
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Pimienta Negra Alicante",
+    "unidad": "KG",
+    "precio": 5400
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Pimienta Negra en Grano",
+    "unidad": "KG",
+    "precio": 27400
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Condimento para Pizza Alicante",
+    "unidad": "KG",
+    "precio": 5400
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Chimichurri Alicante",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Ají Rojo Alicante (molido a mortero)",
+    "unidad": "KG",
+    "precio": 6500
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Ají Cayena Alicante (molido a mortero)",
+    "unidad": "KG",
+    "precio": 6500
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Ajo en Polvo",
+    "unidad": "KG",
+    "precio": 8250
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Ajo en Grano",
+    "unidad": "KG",
+    "precio": 9350
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Nuez Moscada Rayada",
+    "unidad": "KG",
+    "precio": 8500
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Nuez Moscada en Grano",
+    "unidad": "UNI",
+    "precio": 399
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Nuez Moscada en Grano",
+    "unidad": "KG",
+    "precio": 55000
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Canela Molida",
+    "unidad": "KG",
+    "precio": 18000
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Canela en Rama",
+    "unidad": "KG",
+    "precio": 45000
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Clavo de Olor Molido",
+    "unidad": "KG",
+    "precio": 24000
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Clavo de Olor en Grano",
+    "unidad": "KG",
+    "precio": 49900
+  },
+  {
+    "categoria_id": "alicante",
+    "categoria_label": "Condimentos Alicante",
+    "nombre": "Anís en Grano",
+    "unidad": "KG",
+    "precio": 11000
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Pimentón Especial",
+    "unidad": "KG",
+    "precio": 3000
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Comino Especial",
+    "unidad": "KG",
+    "precio": 3850
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Orégano Especial",
+    "unidad": "KG",
+    "precio": 3850
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Provenzal Especial",
+    "unidad": "KG",
+    "precio": 3850
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Condimento para Pizza Especial",
+    "unidad": "KG",
+    "precio": 3850
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Chimichurri Especial",
+    "unidad": "KG",
+    "precio": 3850
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Pimienta Blanca Especial",
+    "unidad": "KG",
+    "precio": 3850
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Pimienta Negra Especial",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Ají Cayena Especial",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "especial",
+    "categoria_label": "Condimentos Especial",
+    "nombre": "Ají Rojo Especial",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Mix Premium",
+    "unidad": "KG",
+    "precio": 9900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Mix Europeo sin Pasas",
+    "unidad": "KG",
+    "precio": 9900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Mix Salado Cervecero",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Almendras",
+    "unidad": "KG",
+    "precio": 23900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Nueces Doradas Mariposa",
+    "unidad": "KG",
+    "precio": 13900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Nueces Blancas Mariposa",
+    "unidad": "KG",
+    "precio": 19900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Pasas de Uva con Semilla",
+    "unidad": "KG",
+    "precio": 3500
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Pasas de Uva sin Semilla",
+    "unidad": "KG",
+    "precio": 5900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Banana Deshidratada",
+    "unidad": "KG",
+    "precio": 19900
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Mix de Granola",
+    "unidad": "KG",
+    "precio": 8500
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Granola Pop",
+    "unidad": "KG",
+    "precio": 8500
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Granola",
+    "unidad": "1.5KG",
+    "precio": 12750
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Frutas Glaseadas",
+    "unidad": "KG",
+    "precio": 10500
+  },
+  {
+    "categoria_id": "frutos-secos",
+    "categoria_label": "Frutos Secos",
+    "nombre": "Frutas Abrillantadas",
+    "unidad": "KG",
+    "precio": 4550
+  },
+  {
+    "categoria_id": "snacks",
+    "categoria_label": "Snacks",
+    "nombre": "Maní sin Sal",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "snacks",
+    "categoria_label": "Snacks",
+    "nombre": "Maní con Sal",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "snacks",
+    "categoria_label": "Snacks",
+    "nombre": "Maní Saborizado (Jamón / Queso / Pizza)",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "snacks",
+    "categoria_label": "Snacks",
+    "nombre": "Maní con Cáscara",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "snacks",
+    "categoria_label": "Snacks",
+    "nombre": "Palitos Salados",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "snacks",
+    "categoria_label": "Snacks",
+    "nombre": "Maní con Piel",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "snacks",
+    "categoria_label": "Snacks",
+    "nombre": "Garrapiñada",
+    "unidad": "KG",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Ciruelas con Carozo",
+    "unidad": "KG",
+    "precio": 5700
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Ciruelas D'Agen sin Carozo",
+    "unidad": "KG",
+    "precio": 9900
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Medallón de Ciruela Presidente sin Carozo",
+    "unidad": "KG",
+    "precio": 10800
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Pasas de Higo",
+    "unidad": "KG",
+    "precio": 10700
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Medallón de Pera",
+    "unidad": "KG",
+    "precio": 11200
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Medallón de Durazno",
+    "unidad": "KG",
+    "precio": 13500
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Pelones",
+    "unidad": "KG",
+    "precio": 9900
+  },
+  {
+    "categoria_id": "frutas-secas",
+    "categoria_label": "Frutas Secas",
+    "nombre": "Fruta Mixta",
+    "unidad": "KG",
+    "precio": 10600
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Chips de Chocolate",
+    "unidad": "KG",
+    "precio": 11500
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Mousse de Frutilla",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Mousse de Vainilla",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Mousse de Limón",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Mousse de Dulce de Leche",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Mousse de Chocolate",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Crema Chantilly en Polvo",
+    "unidad": "KG",
+    "precio": 11900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Guindas",
+    "unidad": "KG",
+    "precio": 11000
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Lata de Cerezas",
+    "unidad": "3.1KG",
+    "precio": 33500
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Maizena",
+    "unidad": "KG",
+    "precio": 2500
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Coco Rallado",
+    "unidad": "KG",
+    "precio": 9800
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Azúcar Impalpable",
+    "unidad": "KG",
+    "precio": 2900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Granas de Colores",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Granas Multicolor",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Perlitas Grageas",
+    "unidad": "KG",
+    "precio": 7900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Estrellitas y Corazones de Colores",
+    "unidad": "KG",
+    "precio": 7900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Crocante de Maní",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Crocante de Maní con Chocolate",
+    "unidad": "KG",
+    "precio": 9900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Barra de Chocolate Alpino (Blanco o Negro)",
+    "unidad": "500G",
+    "precio": 7500
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Polvo para Hornear",
+    "unidad": "KG",
+    "precio": 11900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Esencia de Vainilla",
+    "unidad": "100CC",
+    "precio": 750
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Esencia de Vainilla",
+    "unidad": "5L",
+    "precio": 8000
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Colorante en Pasta Comestible",
+    "unidad": "UNI",
+    "precio": 3500
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Cacao Amargo",
+    "unidad": "KG",
+    "precio": 14900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Cacao Dulce",
+    "unidad": "KG",
+    "precio": 9900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Bicarbonato",
+    "unidad": "KG",
+    "precio": 3900
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Rocklets",
+    "unidad": "KG",
+    "precio": 14000
+  },
+  {
+    "categoria_id": "reposteria",
+    "categoria_label": "Repostería",
+    "nombre": "Gelatina sin Sabor",
+    "unidad": "KG",
+    "precio": 23000
+  },
+  {
+    "categoria_id": "semillas",
+    "categoria_label": "Semillas",
+    "nombre": "Quinoa",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "semillas",
+    "categoria_label": "Semillas",
+    "nombre": "Sésamo",
+    "unidad": "KG",
+    "precio": 7900
+  },
+  {
+    "categoria_id": "semillas",
+    "categoria_label": "Semillas",
+    "nombre": "Lino",
+    "unidad": "KG",
+    "precio": 5900
+  },
+  {
+    "categoria_id": "semillas",
+    "categoria_label": "Semillas",
+    "nombre": "Chía",
+    "unidad": "KG",
+    "precio": 6900
+  },
+  {
+    "categoria_id": "semillas",
+    "categoria_label": "Semillas",
+    "nombre": "Girasol",
+    "unidad": "KG",
+    "precio": 7900
+  },
+  {
+    "categoria_id": "semillas",
+    "categoria_label": "Semillas",
+    "nombre": "Mix de Semillas",
+    "unidad": "KG",
+    "precio": 6900
+  },
+  {
+    "categoria_id": "preparados",
+    "categoria_label": "Preparados para Carne",
+    "nombre": "Hamburguesero",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "preparados",
+    "categoria_label": "Preparados para Carne",
+    "nombre": "Milanesero",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "preparados",
+    "categoria_label": "Preparados para Carne",
+    "nombre": "Chorizo Criollo",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "preparados",
+    "categoria_label": "Preparados para Carne",
+    "nombre": "Chorizo Italiano",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "preparados",
+    "categoria_label": "Preparados para Carne",
+    "nombre": "Chorizo Parrillero",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "preparados",
+    "categoria_label": "Preparados para Carne",
+    "nombre": "Salchicha",
+    "unidad": "KG",
+    "precio": 4900
+  },
+  {
+    "categoria_id": "especias",
+    "categoria_label": "Especias y Hierbas",
+    "nombre": "Albahaca",
+    "unidad": "KG",
+    "precio": 13900
+  },
+  {
+    "categoria_id": "especias",
+    "categoria_label": "Especias y Hierbas",
+    "nombre": "Menta",
+    "unidad": "KG",
+    "precio": 13900
+  },
+  {
+    "categoria_id": "especias",
+    "categoria_label": "Especias y Hierbas",
+    "nombre": "Romero",
+    "unidad": "KG",
+    "precio": 13900
+  },
+  {
+    "categoria_id": "especias",
+    "categoria_label": "Especias y Hierbas",
+    "nombre": "Tomillo",
+    "unidad": "KG",
+    "precio": 13900
+  },
+  {
+    "categoria_id": "especias",
+    "categoria_label": "Especias y Hierbas",
+    "nombre": "Curry",
+    "unidad": "KG",
+    "precio": 8900
+  },
+  {
+    "categoria_id": "especias",
+    "categoria_label": "Especias y Hierbas",
+    "nombre": "Pesto",
+    "unidad": "KG",
+    "precio": 13900
+  },
+  {
+    "categoria_id": "especias",
+    "categoria_label": "Especias y Hierbas",
+    "nombre": "Perejil",
+    "unidad": "KG",
+    "precio": 9800
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°1",
+    "unidad": "500G",
+    "precio": 3990
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°1",
+    "unidad": "1KG",
+    "precio": 6480
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°1",
+    "unidad": "2.5KG",
+    "precio": 13450
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°1",
+    "unidad": "5KG",
+    "precio": 24900
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°0",
+    "unidad": "500G",
+    "precio": 4500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°0",
+    "unidad": "1KG",
+    "precio": 7500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°0",
+    "unidad": "2.5KG",
+    "precio": 16000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°0",
+    "unidad": "5KG",
+    "precio": 30000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°00",
+    "unidad": "500G",
+    "precio": 4950
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°00",
+    "unidad": "1KG",
+    "precio": 8400
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°00",
+    "unidad": "2.5KG",
+    "precio": 18250
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Verdes con Carozo N°00",
+    "unidad": "5KG",
+    "precio": 34500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Descarozadas",
+    "unidad": "500G",
+    "precio": 5250
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Descarozadas",
+    "unidad": "1KG",
+    "precio": 9000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Descarozadas",
+    "unidad": "2.5KG",
+    "precio": 19750
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Descarozadas",
+    "unidad": "5KG",
+    "precio": 37500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Negras",
+    "unidad": "500G",
+    "precio": 7500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Negras",
+    "unidad": "1KG",
+    "precio": 13500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Negras",
+    "unidad": "2.5KG",
+    "precio": 31000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Negras",
+    "unidad": "5KG",
+    "precio": 60000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Fileteadas",
+    "unidad": "500G",
+    "precio": 5250
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Fileteadas",
+    "unidad": "1KG",
+    "precio": 9000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Fileteadas",
+    "unidad": "2.5KG",
+    "precio": 19750
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Aceitunas Fileteadas",
+    "unidad": "5KG",
+    "precio": 37500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Morrones",
+    "unidad": "500G",
+    "precio": 5400
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Morrones",
+    "unidad": "1KG",
+    "precio": 8690
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Morrones",
+    "unidad": "2.5KG",
+    "precio": 16500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Ajíes en Vinagre",
+    "unidad": "500G",
+    "precio": 4300
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Ajíes en Vinagre",
+    "unidad": "1KG",
+    "precio": 6490
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Ajíes en Vinagre",
+    "unidad": "2.5KG",
+    "precio": 15000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Pickles",
+    "unidad": "500G",
+    "precio": 5000
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Pickles",
+    "unidad": "1KG",
+    "precio": 8500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Pickles",
+    "unidad": "2.5KG",
+    "precio": 18500
+  },
+  {
+    "categoria_id": "aceitunas",
+    "categoria_label": "Aceitunas y Encurtidos",
+    "nombre": "Pickles",
+    "unidad": "5KG",
+    "precio": 35000
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Harina de Coco",
+    "unidad": "KG",
+    "precio": 8500
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Harina de Almendras",
+    "unidad": "KG",
+    "precio": 5900
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Harina de Garbanzo",
+    "unidad": "KG",
+    "precio": 2350
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Harina de Centeno",
+    "unidad": "KG",
+    "precio": 2500
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Harina de Algarroba Tostada",
+    "unidad": "KG",
+    "precio": 8700
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Harina de Arroz",
+    "unidad": "KG",
+    "precio": 2350
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Harina de Soja",
+    "unidad": "KG",
+    "precio": 2350
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Avena Tradicional",
+    "unidad": "KG",
+    "precio": 2400
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Avena Instantánea",
+    "unidad": "KG",
+    "precio": 2400
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Texturizado de Soja Grueso",
+    "unidad": "KG",
+    "precio": 2550
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Texturizado de Soja Fino",
+    "unidad": "KG",
+    "precio": 2550
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Fariña de Mandioca",
+    "unidad": "KG",
+    "precio": 5200
+  },
+  {
+    "categoria_id": "harinas",
+    "categoria_label": "Harinas Saludables",
+    "nombre": "Aceite de Coco Neutro",
+    "unidad": "KG",
+    "precio": 5800
+  }
+]

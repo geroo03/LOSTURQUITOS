@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los Turquitos — Tablero de Leads</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --border:#2a2f3a;
+    --text:#e8eaed; --muted:#9aa2b1;
+    --alta:#e5484d; --media:#f5a623; --baja:#5a6272;
+    --mayorista:#3ea6ff; --minorista:#7ee787; --live:#3ecf8e;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit}
+  button:focus-visible, input:focus-visible, select:focus-visible{
+    outline:2px solid var(--mayorista); outline-offset:1px;
+  }
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  #login-form{
+    width:100%; max-width:320px; background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; padding:28px; display:flex; flex-direction:column; gap:12px;
+  }
+  #login-form h1{font-size:17px; margin:0; display:flex; align-items:center; gap:8px}
+  #login-form .sub{color:var(--muted); font-size:12.5px; margin:0 0 6px}
+  #login-form input{
+    background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    padding:9px 11px; border-radius:6px; font-size:13.5px;
+  }
+  #login-form button{
+    background:#2b6cb0; border:1px solid #2b6cb0; color:#fff; padding:9px; border-radius:6px;
+    font-size:13.5px; font-weight:600; cursor:pointer; margin-top:4px;
+  }
+  #login-form button:disabled{opacity:.6; cursor:default}
+  #login-error{color:var(--alta); font-size:12.5px; margin:0; min-height:1em}
+
+  /* ---------- HEADER ---------- */
+  header{
+    padding:14px 20px; background:var(--panel); border-bottom:1px solid var(--border);
+    display:flex; flex-wrap:wrap; gap:12px; align-items:center; position:sticky; top:0; z-index:5;
+  }
+  header h1{font-size:16px; margin:0; font-weight:600; white-space:nowrap; display:flex; align-items:center}
+  header .sub{color:var(--muted); font-size:12px}
+  .live-dot{
+    display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--live);
+    border:1px solid rgba(62,207,142,.35); background:rgba(62,207,142,.1);
+    padding:3px 8px; border-radius:20px; white-space:nowrap;
+  }
+  .live-dot::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--live)}
+  .spacer{flex:1}
+  .btn{
+    background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    padding:7px 12px; border-radius:6px; font-size:13px; cursor:pointer;
+  }
+  .btn:hover{border-color:#3d4454}
+  input[type=text], select{
+    background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    padding:7px 10px; border-radius:6px; font-size:13px;
+  }
+  #stats{padding:8px 20px; font-size:12px; color:var(--muted); background:var(--bg); border-bottom:1px solid var(--border)}
+  #board{
+    display:flex; gap:14px; padding:16px 20px; overflow-x:auto; align-items:flex-start;
+    height:calc(100vh - 80px);
+  }
+  .column{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    min-width:290px; max-width:290px; display:flex; flex-direction:column; max-height:100%;
+  }
+  .column-head{
+    padding:10px 12px; border-bottom:1px solid var(--border); display:flex;
+    justify-content:space-between; align-items:center; font-size:13px; font-weight:600;
+  }
+  .column-head .count{
+    background:var(--panel2); border-radius:10px; padding:1px 8px; font-size:11px; color:var(--muted);
+  }
+  .column-body{padding:10px; overflow-y:auto; flex:1; min-height:60px}
+  .column-body.dragover{background:#1c2735}
+  .card{
+    background:var(--panel2); border:1px solid var(--border); border-radius:8px;
+    padding:10px; margin-bottom:10px; cursor:grab; font-size:12.5px;
+  }
+  .card:active{cursor:grabbing}
+  .card.dragging{opacity:.35}
+  .card-title{font-weight:600; font-size:13px; margin-bottom:4px}
+  .badges{display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px}
+  .badge{border-radius:5px; padding:1px 6px; font-size:10.5px; font-weight:600; letter-spacing:.2px}
+  .badge.mayorista{background:rgba(62,166,255,.15); color:var(--mayorista)}
+  .badge.minorista{background:rgba(126,231,135,.15); color:var(--minorista)}
+  .badge.alta{background:rgba(229,72,77,.18); color:var(--alta)}
+  .badge.media{background:rgba(245,166,35,.18); color:var(--media)}
+  .badge.baja{background:rgba(90,98,114,.25); color:#c2c8d4}
+  .meta{color:var(--muted); font-size:11.5px; margin-bottom:6px; line-height:1.5}
+  .mensaje-box{
+    width:100%; background:#141821; border:1px solid var(--border); color:#c7cbd4;
+    font-size:11.5px; line-height:1.4; border-radius:5px; padding:6px 8px; margin:6px 0 4px;
+    font-family:inherit; resize:vertical; box-sizing:border-box;
+  }
+  .mensaje-reset{color:#7aa2f7; font-size:11px; cursor:pointer; margin-bottom:6px; display:inline-block; background:none; border:none; padding:0}
+  .card-actions{display:flex; gap:6px; margin-top:6px}
+  .card-actions button{
+    flex:1; font-size:11px; padding:5px 6px; border-radius:5px; border:1px solid var(--border);
+    background:#141821; color:var(--text); cursor:pointer;
+  }
+  .card-actions button:hover{border-color:#3d4454}
+  .card-actions .wa{background:#1f6f4a; border-color:#1f6f4a}
+  #empty-state{
+    margin:60px auto; text-align:center; color:var(--muted); max-width:420px; font-size:13px; line-height:1.6;
+  }
+  #empty-state code{background:var(--panel2); padding:1px 5px; border-radius:4px}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <form id="login-form">
+    <h1>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:6px"><path d="M12 2a5 5 0 0 0-5 5v2H6a2 2 0 0 0-2 2l1 9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2l1-9a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Z"/><path d="M9 7a3 3 0 0 1 6 0"/><path d="M9 13h6M9 17h6"/></svg>
+      Los Turquitos
+    </h1>
+    <p class="sub">Tablero de leads — iniciá sesión para continuar</p>
+    <input type="email" id="login-email" placeholder="Email" autocomplete="username" required>
+    <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password" required>
+    <p id="login-error"></p>
+    <button type="submit" id="login-submit">Ingresar</button>
+  </form>
+</div>
+
+<div id="app" style="display:none">
+  <header>
+    <h1>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:6px"><path d="M12 2a5 5 0 0 0-5 5v2H6a2 2 0 0 0-2 2l1 9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2l1-9a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Z"/><path d="M9 7a3 3 0 0 1 6 0"/><path d="M9 13h6M9 17h6"/></svg>
+      Los Turquitos
+    </h1>
+    <span class="live-dot">En vivo</span>
+    <span class="sub">Tablero de leads (Karim) — arrastrá cada tarjeta para cambiar su estado</span>
+    <div class="spacer"></div>
+    <input type="text" id="search" placeholder="Buscar empresa, ciudad, categoría...">
+    <select id="filter-tipo">
+      <option value="">Todos los tipos</option>
+      <option value="Mayorista">Mayorista</option>
+      <option value="Minorista">Minorista</option>
+    </select>
+    <select id="filter-prioridad">
+      <option value="">Toda prioridad</option>
+      <option value="ALTA">Alta</option>
+      <option value="MEDIA">Media</option>
+      <option value="BAJA">Baja</option>
+    </select>
+    <select id="filter-ciudad">
+      <option value="">Toda ciudad</option>
+    </select>
+    <button class="btn" id="logout-btn">Cerrar sesión</button>
+  </header>
+
+  <div id="stats"></div>
+  <div id="board"></div>
+  <div id="empty-state" style="display:none"></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mdjihqgyffjfeoaxiedt.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_1B56mz2mbyKgQ75EEw7hqg_JgXtZHVN';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const ESTADOS = [
+  { id: 'nuevo',       label: 'Nuevo Lead' },
+  { id: 'contactado',  label: 'Contactado' },
+  { id: 'interesado',  label: 'Interesado' },
+  { id: 'cotizado',    label: 'Pedido Cotizado' },
+  { id: 'cliente',     label: 'Cliente' },
+  { id: 'descartado',  label: 'Descartado' },
+];
+const PHONE_ICON = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-1px;margin-right:3px"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2Z"/></svg>';
+const CHECK_ICON = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-1px;margin-right:3px"><path d="M20 6L9 17l-5-5"/></svg>';
+
+let leads = []; // filas tal cual vienen de la tabla `leads` de Supabase
+let realtimeChannel = null;
+
+// ---------- Utilidades ----------
+
+function normalizePhoneDigits(phone){
+  let d = (phone || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('0')) d = d.slice(1);
+  if (d.length === 10) d = '549' + d;
+  else if (d.length === 12 && d.startsWith('54')) d = '549' + d.slice(2);
+  else if (!d.startsWith('54')) d = '549' + d;
+  return d;
+}
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- Auth ----------
+
+async function checkSession(){
+  const { data } = await sb.auth.getSession();
+  if (data.session){
+    showApp();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  if (realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+}
+
+async function showApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  await loadLeads();
+  subscribeRealtime();
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-submit');
+  const errorEl = document.getElementById('login-error');
+  errorEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Ingresando…';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+
+  btn.disabled = false;
+  btn.textContent = 'Ingresar';
+
+  if (error){
+    errorEl.textContent = 'Email o contraseña incorrectos.';
+    return;
+  }
+  showApp();
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  showLogin();
+});
+
+// ---------- Datos ----------
+
+async function loadLeads(){
+  const { data, error } = await sb.from('leads').select('*').order('score', { ascending: false });
+  if (error){
+    document.getElementById('stats').textContent = 'Error cargando leads: ' + error.message;
+    return;
+  }
+  leads = data || [];
+  renderFiltroCiudad();
+  render();
+}
+
+// Arma las opciones de ciudad a partir de lo que realmente hay cargado en `leads`
+// (no una lista fija), y conserva la ciudad elegida si sigue existiendo tras el refresh.
+function renderFiltroCiudad(){
+  const sel = document.getElementById('filter-ciudad');
+  const actual = sel.value;
+  const ciudades = [...new Set(leads.map(l => l.ciudad).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+  sel.innerHTML = '<option value="">Toda ciudad</option>' + ciudades.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  if (ciudades.includes(actual)) sel.value = actual;
+}
+
+function subscribeRealtime(){
+  if (realtimeChannel) return;
+  realtimeChannel = sb.channel('leads-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload) => {
+      if (payload.eventType === 'INSERT'){
+        leads.push(payload.new);
+      } else if (payload.eventType === 'UPDATE'){
+        const idx = leads.findIndex(l => l.id === payload.new.id);
+        if (idx >= 0) leads[idx] = payload.new; else leads.push(payload.new);
+      } else if (payload.eventType === 'DELETE'){
+        leads = leads.filter(l => l.id !== payload.old.id);
+      }
+      renderFiltroCiudad();
+      render();
+    })
+    .subscribe();
+}
+
+async function updateEstado(leadId, nuevoEstado){
+  // Actualización optimista: refleja el cambio ya mismo en pantalla,
+  // Supabase confirma (o el realtime lo corrige) en segundo plano.
+  const idx = leads.findIndex(l => l.id === leadId);
+  if (idx >= 0) leads[idx] = { ...leads[idx], estado: nuevoEstado };
+  render();
+
+  const { error } = await sb.from('leads').update({ estado: nuevoEstado }).eq('id', leadId);
+  if (error){
+    document.getElementById('stats').textContent = 'No se pudo guardar el cambio: ' + error.message;
+  }
+}
+
+// ---------- Render ----------
+
+function badgeClass(tipo){ return tipo === 'Mayorista' ? 'mayorista' : 'minorista'; }
+function prioClass(p){ return (p || '').toLowerCase(); }
+
+// Mensajes en edición por lead (id -> texto). Vive fuera de `leads` para no perderse
+// cuando el tablero repinta el board entero (drag&drop, realtime, filtros).
+let mensajeDraft = {};
+
+function mensajeActual(l){
+  return mensajeDraft[l.id] !== undefined ? mensajeDraft[l.id] : (l.hook_venta || '');
+}
+
+function onMensajeInput(id, value){
+  mensajeDraft[id] = value;
+}
+
+function resetMensaje(id){
+  delete mensajeDraft[id];
+  render();
+}
+
+function cardHTML(l){
+  const tipo = l.tipo_negocio || '';
+  const prioridad = l.prioridad || '';
+  const digits = normalizePhoneDigits(l.telefono);
+  const mensaje = mensajeActual(l);
+  return `
+    <div class="card" draggable="true" data-id="${l.id}">
+      <div class="card-title">${escapeHtml(l.empresa || 'Sin nombre')}</div>
+      <div class="badges">
+        ${tipo ? `<span class="badge ${badgeClass(tipo)}">${tipo}</span>` : ''}
+        ${prioridad ? `<span class="badge ${prioClass(prioridad)}">${prioridad}</span>` : ''}
+      </div>
+      <div class="meta">
+        ${escapeHtml(l.categoria_producto || '')}${l.categoria_producto ? ' · ' : ''}${escapeHtml(l.ciudad || '')}<br>
+        ${PHONE_ICON}${l.telefono ? escapeHtml(l.telefono) : 'sin teléfono'} · Score ${escapeHtml(l.score ?? '-')}
+      </div>
+      <textarea class="mensaje-box" id="mensaje-${l.id}" rows="3" oninput="onMensajeInput(${l.id}, this.value)">${escapeHtml(mensaje)}</textarea>
+      <button class="mensaje-reset" onclick="resetMensaje(${l.id})">Restablecer mensaje original</button>
+      <div class="card-actions">
+        <button onclick="copyMensaje(${l.id}, this)">Copiar mensaje</button>
+        ${digits ? `<button class="wa" onclick="openWhatsapp(${l.id}, '${digits}')">WhatsApp</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function copyMensaje(id, btn){
+  const lead = leads.find(l => l.id === id);
+  navigator.clipboard.writeText(lead ? mensajeActual(lead) : '').then(() => {
+    const old = btn.textContent;
+    btn.innerHTML = CHECK_ICON + 'Copiado';
+    setTimeout(() => btn.textContent = old, 1200);
+  });
+}
+
+function openWhatsapp(id, digits){
+  const lead = leads.find(l => l.id === id);
+  const text = encodeURIComponent(lead ? mensajeActual(lead) : '');
+  window.open(`https://wa.me/${digits}?text=${text}`, '_blank');
+}
+
+function getFilters(){
+  return {
+    search: document.getElementById('search').value.trim().toLowerCase(),
+    tipo: document.getElementById('filter-tipo').value,
+    prioridad: document.getElementById('filter-prioridad').value,
+    ciudad: document.getElementById('filter-ciudad').value,
+  };
+}
+
+function matchesFilters(l, f){
+  if (f.tipo && l.tipo_negocio !== f.tipo) return false;
+  if (f.prioridad && l.prioridad !== f.prioridad) return false;
+  if (f.ciudad && l.ciudad !== f.ciudad) return false;
+  if (f.search){
+    const hay = `${l.empresa} ${l.ciudad} ${l.categoria_producto}`.toLowerCase();
+    if (!hay.includes(f.search)) return false;
+  }
+  return true;
+}
+
+function render(){
+  const board = document.getElementById('board');
+  const emptyState = document.getElementById('empty-state');
+  const stats = document.getElementById('stats');
+
+  if (!leads.length){
+    board.style.display = 'none';
+    emptyState.style.display = 'block';
+    emptyState.innerHTML = `
+      Todavía no hay leads en la base.<br><br>
+      Corré <code>agente_prospeccion_condimentos.py</code> (sube los leads directo a Supabase)
+      o <code>migrate_to_supabase.py</code> si ya tenés un CSV generado.`;
+    stats.textContent = '';
+    return;
+  }
+  board.style.display = 'flex';
+  emptyState.style.display = 'none';
+
+  const f = getFilters();
+  const byEstado = {};
+  ESTADOS.forEach(e => byEstado[e.id] = []);
+
+  leads.forEach(l => {
+    if (!matchesFilters(l, f)) return;
+    const estado = ESTADOS.some(e => e.id === l.estado) ? l.estado : 'nuevo';
+    byEstado[estado].push(l);
+  });
+
+  board.innerHTML = ESTADOS.map(e => `
+    <div class="column" data-estado="${e.id}">
+      <div class="column-head">
+        <span>${e.label}</span>
+        <span class="count">${byEstado[e.id].length}</span>
+      </div>
+      <div class="column-body" data-estado="${e.id}">
+        ${byEstado[e.id].map(l => cardHTML(l)).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const totalVisible = ESTADOS.reduce((acc, e) => acc + byEstado[e.id].length, 0);
+  stats.textContent = `${leads.length} leads en la base · ${totalVisible} visibles con filtros actuales`;
+
+  wireDnD();
+}
+
+// ---------- Drag & drop ----------
+
+function wireDnD(){
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      // Sin esto, arrancar una selección de texto en el textarea (o clickear un botón)
+      // dispara el drag&drop de la tarjeta entera en vez de dejar interactuar con el control.
+      if (['TEXTAREA', 'BUTTON'].includes(e.target.tagName)){ e.preventDefault(); return; }
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  });
+
+  document.querySelectorAll('.column-body').forEach(col => {
+    col.addEventListener('dragover', e => {
+      e.preventDefault();
+      col.classList.add('dragover');
+    });
+    col.addEventListener('dragleave', () => col.classList.remove('dragover'));
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('dragover');
+      const leadId = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      const nuevoEstado = col.dataset.estado;
+      updateEstado(leadId, nuevoEstado);
+    });
+  });
+}
+
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('filter-tipo').addEventListener('change', render);
+document.getElementById('filter-prioridad').addEventListener('change', render);
+document.getElementById('filter-ciudad').addEventListener('change', render);
+
+// ---------- Init ----------
+
+checkSession();
+</script>
+</body>
+</html>

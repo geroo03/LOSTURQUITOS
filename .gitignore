@@ -1,0 +1,8 @@
+desktop.ini
+**/__pycache__/
+*.pyc
+.env
+
+# Datos de negocio (leads scrapeados: nombre/dirección/teléfono de comercios) — no van al repo público
+prospeccion_condimentos_core/scraping/leads_karim.csv
+prospeccion_condimentos_core/scraping/LEADS_SEGMENTADOS/
