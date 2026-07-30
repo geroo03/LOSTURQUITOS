@@ -73,9 +73,9 @@
     margin-top:30px; display:flex; align-items:center; gap:14px; font-size:14px; color:#cdc4a4;
   }
   .signature .mark{
-    width:42px; height:42px; border-radius:50%; border:1.5px solid var(--mustard);
+    width:60px; height:60px; border-radius:50%; border:1.5px solid var(--mustard);
     display:flex; align-items:center; justify-content:center; font-family:var(--font-display);
-    font-size:18px; color:var(--mustard); flex-shrink:0; overflow:hidden;
+    font-size:22px; color:var(--mustard); flex-shrink:0; overflow:hidden;
   }
   .signature .mark img{width:100%; height:100%; object-fit:cover; display:block}
   .hero .cta-row{margin-top:34px; display:flex; gap:12px; flex-wrap:wrap}
@@ -462,20 +462,15 @@ const SUPABASE_URL = 'https://mdjihqgyffjfeoaxiedt.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_1B56mz2mbyKgQ75EEw7hqg_JgXtZHVN';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Orden fijo de categorías (el orden de fila en `productos` define el orden de producto dentro de cada una)
-const CATEGORIA_ORDEN = [
-  { id:'alicante',      label:'Condimentos Alicante' },
-  { id:'especial',      label:'Condimentos Especial' },
-  { id:'frutos-secos',  label:'Frutos Secos' },
-  { id:'snacks',        label:'Snacks' },
-  { id:'frutas-secas',  label:'Frutas Secas' },
-  { id:'reposteria',    label:'Repostería' },
-  { id:'semillas',      label:'Semillas' },
-  { id:'preparados',    label:'Preparados para Carne' },
-  { id:'especias',      label:'Especias y Hierbas' },
-  { id:'aceitunas',     label:'Aceitunas y Encurtidos' },
-  { id:'harinas',       label:'Harinas Saludables' },
-];
+// Orden y nombres de categoría: antes era una lista fija, ahora se editan desde el panel
+// de Karim (tabla `categorias`) y se cargan acá con cargarCategorias().
+let CATEGORIA_ORDEN = [];
+
+async function cargarCategorias(){
+  const { data, error } = await sb.from('categorias').select('id, label').order('orden', { ascending: true });
+  if (error || !data) return;
+  CATEGORIA_ORDEN = data;
+}
 
 // Se completa al cargar los productos desde Supabase (ver cargarProductos())
 let CATALOGO = [];
@@ -946,6 +941,7 @@ async function init(){
   });
 
   cargarConfiguracion();
+  await cargarCategorias();
   const ok = await cargarProductos();
   if (!ok) return;
 

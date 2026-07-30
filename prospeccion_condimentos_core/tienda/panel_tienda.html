@@ -146,6 +146,24 @@
   .producto-row-actions button:hover{border-color:#3d4454}
   .producto-row-actions .danger{background:rgba(229,72,77,.12); border-color:rgba(229,72,77,.4); color:var(--alta)}
 
+  /* ---------- CATEGORÍAS ---------- */
+  #categorias-view{padding:16px 20px; max-width:560px}
+  .categorias-nueva{display:flex; gap:8px}
+  .categorias-nueva input{flex:1}
+  .categoria-row{
+    display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:10px 12px; margin-bottom:8px;
+  }
+  .categoria-orden-btns{display:flex; flex-direction:column; gap:2px}
+  .categoria-orden-btns button{
+    width:22px; height:18px; font-size:11px; line-height:1; border-radius:4px; border:1px solid var(--border);
+    background:var(--panel2); color:var(--text); cursor:pointer;
+  }
+  .categoria-orden-btns button:disabled{opacity:.3; cursor:not-allowed}
+  .categoria-info{flex:1; min-width:0; display:flex; align-items:center; gap:10px}
+  .categoria-info input{flex:1; font-weight:600}
+  .categoria-slug{font-family:monospace; font-size:11px; color:var(--muted); flex-shrink:0}
+
   /* ---------- MODAL DE PRODUCTO ---------- */
   #producto-modal-overlay{
     position:fixed; inset:0; background:rgba(6,8,12,.6); z-index:49; opacity:0; pointer-events:none;
@@ -232,11 +250,13 @@
   <div id="tabs">
     <button class="tab active" id="tab-pedidos" onclick="showTab('pedidos')">Pedidos</button>
     <button class="tab" id="tab-productos" onclick="showTab('productos')">Productos</button>
+    <button class="tab" id="tab-categorias" onclick="showTab('categorias')">Categorías</button>
     <button class="tab" id="tab-config" onclick="showTab('config')">Configuración</button>
   </div>
 
   <div id="pedidos-view"></div>
   <div id="productos-view" style="display:none"></div>
+  <div id="categorias-view" style="display:none"></div>
   <div id="config-view" style="display:none"></div>
 </div>
 
@@ -318,26 +338,12 @@ const ESTADOS_PEDIDO = [
   { id: 'entregado',  label: 'Entregado' },
   { id: 'cancelado',  label: 'Cancelado' },
 ];
-// Mismo orden/ids que CATEGORIA_ORDEN en catalogo_los_turquitos.html: si se agrega una categoría acá
-// sin agregarla también ahí, los productos de esa categoría quedan invisibles en el catálogo público.
-const CATEGORIAS = [
-  { id:'alicante',      label:'Condimentos Alicante' },
-  { id:'especial',      label:'Condimentos Especial' },
-  { id:'frutos-secos',  label:'Frutos Secos' },
-  { id:'snacks',        label:'Snacks' },
-  { id:'frutas-secas',  label:'Frutas Secas' },
-  { id:'reposteria',    label:'Repostería' },
-  { id:'semillas',      label:'Semillas' },
-  { id:'preparados',    label:'Preparados para Carne' },
-  { id:'especias',      label:'Especias y Hierbas' },
-  { id:'aceitunas',     label:'Aceitunas y Encurtidos' },
-  { id:'harinas',       label:'Harinas Saludables' },
-];
-
 let pedidos = [];      // filas tal cual vienen de la tabla `pedidos` de Supabase
 let productos = [];    // filas tal cual vienen de la tabla `productos` de Supabase
+let categorias = [];   // filas tal cual vienen de la tabla `categorias` de Supabase, ordenadas por `orden`
 let pedidosChannel = null;
 let productosChannel = null;
+let categoriasChannel = null;
 let filtroEstadoPedido = ''; // '' = todos los estados
 let filtroProductoTexto = '';
 let filtroProductoCategoria = ''; // '' = todas
@@ -373,22 +379,27 @@ function showLogin(){
   document.getElementById('app').style.display = 'none';
   if (pedidosChannel){ sb.removeChannel(pedidosChannel); pedidosChannel = null; }
   if (productosChannel){ sb.removeChannel(productosChannel); productosChannel = null; }
+  if (categoriasChannel){ sb.removeChannel(categoriasChannel); categoriasChannel = null; }
 }
 
 async function showApp(){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  await loadCategorias();
   await Promise.all([loadPedidos(), loadProductos(), loadConfiguracion()]);
   subscribeRealtimePedidos();
   subscribeRealtimeProductos();
+  subscribeRealtimeCategorias();
 }
 
 function showTab(tab){
   document.getElementById('tab-pedidos').classList.toggle('active', tab === 'pedidos');
   document.getElementById('tab-productos').classList.toggle('active', tab === 'productos');
+  document.getElementById('tab-categorias').classList.toggle('active', tab === 'categorias');
   document.getElementById('tab-config').classList.toggle('active', tab === 'config');
   document.getElementById('pedidos-view').style.display = tab === 'pedidos' ? '' : 'none';
   document.getElementById('productos-view').style.display = tab === 'productos' ? '' : 'none';
+  document.getElementById('categorias-view').style.display = tab === 'categorias' ? '' : 'none';
   document.getElementById('config-view').style.display = tab === 'config' ? '' : 'none';
 }
 
@@ -601,7 +612,7 @@ async function generarPDF(id){
 // ---------- Productos ----------
 
 function categoriaLabel(id){
-  const c = CATEGORIAS.find(c => c.id === id);
+  const c = categorias.find(c => c.id === id);
   return c ? c.label : id;
 }
 
@@ -673,7 +684,7 @@ function renderProductos(){
       <input type="text" id="productos-search" placeholder="Buscar producto...">
       <select id="productos-filter-categoria">
         <option value="">Todas las categorías</option>
-        ${CATEGORIAS.map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
+        ${categorias.map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
       </select>
       <span id="productos-count"></span>
       <div class="spacer"></div>
@@ -747,8 +758,8 @@ function openProductoModal(id){
 
   document.getElementById('producto-error').textContent = '';
   document.getElementById('producto-modal-title').textContent = p ? 'Editar producto' : 'Nuevo producto';
-  document.getElementById('pf-categoria').innerHTML = CATEGORIAS.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
-  document.getElementById('pf-categoria').value = p ? p.categoria_id : CATEGORIAS[0].id;
+  document.getElementById('pf-categoria').innerHTML = categorias.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+  document.getElementById('pf-categoria').value = p ? p.categoria_id : (categorias[0] ? categorias[0].id : '');
   document.getElementById('pf-nombre').value = p ? p.nombre : '';
   document.getElementById('pf-unidad').value = p ? (p.unidad || '') : '';
   document.getElementById('pf-precio').value = p ? p.precio : '';
@@ -885,6 +896,146 @@ async function borrarProductoActual(){
   }
   await loadProductos();
   closeProductoModal();
+}
+
+// ---------- Categorías ----------
+
+function slugify(texto){
+  return String(texto).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // saca tildes
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+async function loadCategorias(){
+  const { data, error } = await sb.from('categorias').select('*').order('orden', { ascending: true });
+  if (error){
+    document.getElementById('categorias-view').innerHTML = `<p style="padding:20px;color:var(--muted)">Error cargando categorías: ${escapeHtml(error.message)} — ¿corriste supabase_add_categorias.sql en el SQL Editor?</p>`;
+    return;
+  }
+  categorias = data || [];
+  renderCategorias();
+}
+
+function subscribeRealtimeCategorias(){
+  if (categoriasChannel) return;
+  categoriasChannel = sb.channel('categorias-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'categorias' }, (payload) => {
+      if (payload.eventType === 'INSERT'){
+        categorias.push(payload.new);
+      } else if (payload.eventType === 'UPDATE'){
+        const idx = categorias.findIndex(c => c.id === payload.new.id);
+        if (idx >= 0) categorias[idx] = payload.new; else categorias.push(payload.new);
+      } else if (payload.eventType === 'DELETE'){
+        categorias = categorias.filter(c => c.id !== payload.old.id);
+      }
+      categorias.sort((a, b) => a.orden - b.orden);
+      renderCategorias();
+    })
+    .subscribe();
+}
+
+function categoriaRowHTML(c, idx, total){
+  return `
+    <div class="categoria-row">
+      <div class="categoria-orden-btns">
+        <button onclick="moverCategoria('${c.id}',-1)" ${idx === 0 ? 'disabled' : ''} aria-label="Subir">↑</button>
+        <button onclick="moverCategoria('${c.id}',1)" ${idx === total - 1 ? 'disabled' : ''} aria-label="Bajar">↓</button>
+      </div>
+      <div class="categoria-info">
+        <input type="text" value="${escapeHtml(c.label)}" onchange="renombrarCategoria('${c.id}', this.value)">
+        <span class="categoria-slug">${escapeHtml(c.id)}</span>
+      </div>
+      <button class="danger" onclick="borrarCategoria('${c.id}')">Borrar</button>
+    </div>`;
+}
+
+function renderCategorias(){
+  const view = document.getElementById('categorias-view');
+  view.innerHTML = `
+    <div class="categorias-nueva">
+      <input type="text" id="nueva-categoria-input" placeholder="Nombre de la categoría nueva (ej: Aceites)">
+      <button class="btn btn-primary" onclick="crearCategoria()">+ Agregar categoría</button>
+    </div>
+    <p id="categoria-error" style="color:var(--alta); font-size:12px; min-height:1em; margin:4px 0 12px"></p>
+    <div id="categorias-list"></div>`;
+
+  document.getElementById('categorias-list').innerHTML = categorias.length
+    ? categorias.map((c, idx) => categoriaRowHTML(c, idx, categorias.length)).join('')
+    : `<p style="color:var(--muted)">Todavía no hay categorías. Agregá la primera arriba.</p>`;
+}
+
+async function crearCategoria(){
+  const input = document.getElementById('nueva-categoria-input');
+  const label = input.value.trim();
+  const errorEl = document.getElementById('categoria-error');
+  if (!label){
+    errorEl.textContent = 'Escribí un nombre para la categoría.';
+    return;
+  }
+  const id = slugify(label);
+  if (!id){
+    errorEl.textContent = 'Ese nombre no genera un identificador válido, probá con otro.';
+    return;
+  }
+  if (categorias.some(c => c.id === id)){
+    errorEl.textContent = 'Ya existe una categoría con ese nombre.';
+    return;
+  }
+  errorEl.textContent = '';
+  const orden = categorias.length ? Math.max(...categorias.map(c => c.orden)) + 1 : 1;
+
+  const { error } = await sb.from('categorias').insert({ id, label, orden });
+  if (error){
+    errorEl.textContent = 'No se pudo crear: ' + error.message;
+    return;
+  }
+  input.value = '';
+  await loadCategorias();
+}
+
+async function renombrarCategoria(id, nuevoLabel){
+  const label = nuevoLabel.trim();
+  if (!label) return;
+  const idx = categorias.findIndex(c => c.id === id);
+  if (idx >= 0) categorias[idx] = { ...categorias[idx], label };
+  renderCategorias();
+
+  const { error } = await sb.from('categorias').update({ label }).eq('id', id);
+  if (error) console.error('No se pudo renombrar la categoría:', error.message);
+}
+
+async function moverCategoria(id, direccion){
+  const idx = categorias.findIndex(c => c.id === id);
+  const otroIdx = idx + direccion;
+  if (idx < 0 || otroIdx < 0 || otroIdx >= categorias.length) return;
+
+  const a = categorias[idx];
+  const b = categorias[otroIdx];
+  [a.orden, b.orden] = [b.orden, a.orden];
+  categorias.sort((x, y) => x.orden - y.orden);
+  renderCategorias();
+
+  const [{ error: e1 }, { error: e2 }] = await Promise.all([
+    sb.from('categorias').update({ orden: a.orden }).eq('id', a.id),
+    sb.from('categorias').update({ orden: b.orden }).eq('id', b.id),
+  ]);
+  if (e1 || e2) console.error('No se pudo reordenar:', (e1 || e2).message);
+}
+
+async function borrarCategoria(id){
+  const enUso = productos.filter(p => p.categoria_id === id).length;
+  const msg = enUso > 0
+    ? `Hay ${enUso} producto(s) usando esta categoría. Si la borrás, van a dejar de verse en el catálogo hasta que les asignes otra categoría. ¿Borrar igual?`
+    : '¿Borrar esta categoría?';
+  if (!confirm(msg)) return;
+
+  const { error } = await sb.from('categorias').delete().eq('id', id);
+  if (error){
+    alert('No se pudo borrar la categoría: ' + error.message);
+    return;
+  }
+  await loadCategorias();
 }
 
 // ---------- Configuración (logo del negocio) ----------
