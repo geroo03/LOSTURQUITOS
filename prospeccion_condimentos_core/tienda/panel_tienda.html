@@ -134,6 +134,10 @@
     background:rgba(90,98,114,.25); color:#c2c8d4; border-radius:5px; padding:1px 6px;
     font-size:10px; font-weight:600; margin-left:6px;
   }
+  .badge-destacado{
+    background:rgba(245,166,35,.18); color:var(--media); border-radius:5px; padding:1px 6px;
+    font-size:10px; font-weight:600; margin-left:6px;
+  }
   .producto-row-actions{display:flex; gap:6px}
   .producto-row-actions button{
     font-size:11px; padding:5px 8px; border-radius:5px; border:1px solid var(--border);
@@ -267,6 +271,11 @@
     <label for="pf-activo">Visible en el catálogo</label>
   </div>
 
+  <div class="check-row">
+    <input type="checkbox" id="pf-destacado">
+    <label for="pf-destacado">Mostrar en el carrusel de destacados</label>
+  </div>
+
   <label for="pf-descripcion">Descripción (ficha de producto)</label>
   <textarea id="pf-descripcion" rows="3" placeholder="Se muestra en la ficha del producto del catálogo"></textarea>
 
@@ -337,6 +346,10 @@ let productoPortadaUrl = null; // imagen_url en edición dentro del modal
 let productoGaleriaUrls = [];  // imagenes[] en edición dentro del modal
 let logoUrl = null;  // logo_url de la fila única de `configuracion`, o null si no hay logo cargado
 let fondoUrl = null;  // fondo_url de la fila única de `configuracion`, o null si no hay imagen de fondo
+let tagline = null;   // tagline de la fila única de `configuracion`, o null si se usa el texto de por defecto
+// Mismo texto que trae por defecto el HTML del catálogo (catalogo_los_turquitos.html) — se muestra acá
+// como referencia de lo que ve el cliente cuando no hay una descripción propia cargada.
+const DEFAULT_TAGLINE = 'Condimentos, frutos secos, especias, aceitunas, encurtidos, repostería y semillas a precio de mayorista. Armá tu pedido acá abajo y te lo mandamos directo por WhatsApp.';
 
 function money(n){ return '$' + (n ?? 0).toLocaleString('es-AR'); }
 
@@ -630,6 +643,7 @@ function productoRowHTML(p){
       <td>
         <span class="producto-nombre">${escapeHtml(p.nombre)}</span>
         ${!p.activo ? '<span class="badge-inactivo">Inactivo</span>' : ''}
+        ${p.destacado ? '<span class="badge-destacado">★ Destacado</span>' : ''}
       </td>
       <td>${escapeHtml(categoriaLabel(p.categoria_id))}</td>
       <td>${escapeHtml(p.unidad || '')}</td>
@@ -638,6 +652,7 @@ function productoRowHTML(p){
         <div class="producto-row-actions">
           <button onclick="openProductoModal(${p.id})">Editar</button>
           <button onclick="toggleActivoProducto(${p.id}, ${!p.activo})">${p.activo ? 'Dar de baja' : 'Reactivar'}</button>
+          <button onclick="toggleDestacadoProducto(${p.id}, ${!p.destacado})">${p.destacado ? 'Quitar destacado' : 'Destacar'}</button>
           <button class="danger" onclick="borrarProducto(${p.id})">Borrar</button>
         </div>
       </td>
@@ -705,6 +720,15 @@ async function toggleActivoProducto(id, nuevoActivo){
   if (error) console.error('No se pudo actualizar el producto:', error.message);
 }
 
+async function toggleDestacadoProducto(id, nuevoDestacado){
+  const idx = productos.findIndex(p => p.id === id);
+  if (idx >= 0) productos[idx] = { ...productos[idx], destacado: nuevoDestacado };
+  renderProductosResults();
+
+  const { error } = await sb.from('productos').update({ destacado: nuevoDestacado }).eq('id', id);
+  if (error) console.error('No se pudo actualizar el producto:', error.message);
+}
+
 async function borrarProducto(id){
   if (!confirm('¿Borrar este producto? Esta acción no se puede deshacer.')) return;
   const { error } = await sb.from('productos').delete().eq('id', id);
@@ -729,6 +753,7 @@ function openProductoModal(id){
   document.getElementById('pf-unidad').value = p ? (p.unidad || '') : '';
   document.getElementById('pf-precio').value = p ? p.precio : '';
   document.getElementById('pf-activo').checked = p ? !!p.activo : true;
+  document.getElementById('pf-destacado').checked = p ? !!p.destacado : false;
   document.getElementById('pf-descripcion').value = p ? (p.descripcion || '') : '';
   document.getElementById('pf-delete').style.display = p ? '' : 'none';
   document.getElementById('pf-portada-status').textContent = '';
@@ -813,6 +838,7 @@ async function guardarProducto(){
   const unidad = document.getElementById('pf-unidad').value.trim();
   const precio = parseInt(document.getElementById('pf-precio').value, 10);
   const activo = document.getElementById('pf-activo').checked;
+  const destacado = document.getElementById('pf-destacado').checked;
   const descripcion = document.getElementById('pf-descripcion').value.trim();
   const errorEl = document.getElementById('producto-error');
 
@@ -823,7 +849,7 @@ async function guardarProducto(){
   errorEl.textContent = '';
 
   const payload = {
-    categoria_id, categoria_label, nombre, unidad, precio, activo,
+    categoria_id, categoria_label, nombre, unidad, precio, activo, destacado,
     descripcion: descripcion || null,
     imagen_url: productoPortadaUrl,
     imagenes: productoGaleriaUrls,
@@ -864,13 +890,14 @@ async function borrarProductoActual(){
 // ---------- Configuración (logo del negocio) ----------
 
 async function loadConfiguracion(){
-  const { data, error } = await sb.from('configuracion').select('logo_url, fondo_url').eq('id', 1).maybeSingle();
+  const { data, error } = await sb.from('configuracion').select('logo_url, fondo_url, tagline').eq('id', 1).maybeSingle();
   if (error){
     document.getElementById('config-view').innerHTML = `<p style="padding:20px;color:var(--muted)">Error cargando la configuración: ${escapeHtml(error.message)}</p>`;
     return;
   }
   logoUrl = data ? data.logo_url : null;
   fondoUrl = data ? data.fondo_url : null;
+  tagline = data ? data.tagline : null;
   renderConfiguracion();
 }
 
@@ -904,6 +931,17 @@ function renderConfiguracion(){
         </label>
         ${fondoUrl ? '<button class="btn" onclick="quitarFondo()">Quitar imagen de fondo</button>' : ''}
         <span class="upload-status" id="fondo-status"></span>
+      </div>
+    </div>
+
+    <div class="config-card" style="margin-top:16px">
+      <h3>Descripción de la portada</h3>
+      <p class="sub">El texto que aparece debajo de "Los Turquitos" en la portada del catálogo.</p>
+      <textarea id="tagline-input" rows="3" style="width:100%">${escapeHtml(tagline || DEFAULT_TAGLINE)}</textarea>
+      <div class="logo-actions" style="margin-top:10px">
+        <button class="btn btn-primary" onclick="guardarTagline()">Guardar descripción</button>
+        ${tagline ? '<button class="btn" onclick="restablecerTagline()">Restablecer texto original</button>' : ''}
+        <span class="upload-status" id="tagline-status"></span>
       </div>
     </div>`;
 }
@@ -962,6 +1000,29 @@ async function quitarFondo(){
   } catch (e){
     alert('No se pudo quitar la imagen de fondo: ' + e.message);
   }
+}
+
+async function guardarTagline(){
+  const status = document.getElementById('tagline-status');
+  const texto = document.getElementById('tagline-input').value.trim();
+  status.textContent = 'Guardando...';
+  const { error } = await sb.from('configuracion').update({ tagline: texto || null }).eq('id', 1);
+  if (error){
+    status.textContent = 'Error al guardar: ' + error.message;
+    return;
+  }
+  tagline = texto || null;
+  renderConfiguracion();
+}
+
+async function restablecerTagline(){
+  const { error } = await sb.from('configuracion').update({ tagline: null }).eq('id', 1);
+  if (error){
+    alert('No se pudo restablecer: ' + error.message);
+    return;
+  }
+  tagline = null;
+  renderConfiguracion();
 }
 
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeProductoModal(); });
