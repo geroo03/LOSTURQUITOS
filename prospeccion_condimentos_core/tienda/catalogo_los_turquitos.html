@@ -253,6 +253,22 @@
   #send-order:disabled{background:#b9c6bd; color:#5b6960; cursor:not-allowed}
   #send-order:not(:disabled):hover{background:#17a350}
 
+  /* ---------- CONFIRMACIÓN DE PEDIDO ---------- */
+  #cart-confirmacion{
+    flex:1; display:flex; flex-direction:column; align-items:center; text-align:center;
+    justify-content:center; gap:10px; padding:50px 30px;
+  }
+  .confirmacion-check{
+    width:56px; height:56px; border-radius:50%; background:#1ebe5d; color:#fff;
+    display:flex; align-items:center; justify-content:center; margin-bottom:4px;
+  }
+  #cart-confirmacion h3{font-family:var(--font-display); font-size:1.4rem; color:var(--teal-deep)}
+  #cart-confirmacion p{font-size:13.5px; color:#6b6250; line-height:1.55; max-width:30ch}
+  .btn-confirmacion-cerrar{
+    margin-top:10px; background:var(--ink); color:var(--paper); border:none; border-radius:4px;
+    padding:11px 20px; font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+
   /* ---------- FICHA DE PRODUCTO (MODAL) ---------- */
   .card-open{
     background:none; border:none; padding:0; margin:0; text-align:left; cursor:pointer; width:100%;
@@ -392,7 +408,7 @@
     </button>
   </div>
   <div class="cart-items" id="cart-items"></div>
-  <div class="cart-footer">
+  <div class="cart-footer" id="cart-footer">
     <div class="cart-total">
       <span class="label">Total</span>
       <span class="value" id="cart-total-value">$0</span>
@@ -420,6 +436,14 @@
     <label for="cust-note">Nota (opcional)</label>
     <textarea id="cust-note" rows="2" placeholder="Alguna aclaración para tu pedido"></textarea>
     <button id="send-order" onclick="sendOrder()" disabled>Enviar pedido por WhatsApp</button>
+  </div>
+  <div id="cart-confirmacion" style="display:none">
+    <div class="confirmacion-check">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h3>¡Pedido enviado!</h3>
+    <p>Se abrió WhatsApp con tu pedido listo para mandar. Karim te va a responder ahí para coordinar la entrega.</p>
+    <button class="btn-confirmacion-cerrar" onclick="closeCart()">Seguir comprando</button>
   </div>
 </aside>
 
@@ -851,6 +875,17 @@ function openCart(){
 function closeCart(){
   document.getElementById('cart-overlay').classList.remove('open');
   document.getElementById('cart-drawer').classList.remove('open');
+  // Al cerrar (con la X, clickeando afuera, o desde "Seguir comprando") siempre volvemos a la
+  // vista normal del carrito, para que la próxima vez que se abra no quede la pantalla de "enviado".
+  document.getElementById('cart-confirmacion').style.display = 'none';
+  document.getElementById('cart-items').style.display = '';
+  document.getElementById('cart-footer').style.display = '';
+}
+
+function mostrarConfirmacionPedido(){
+  document.getElementById('cart-items').style.display = 'none';
+  document.getElementById('cart-footer').style.display = 'none';
+  document.getElementById('cart-confirmacion').style.display = 'flex';
 }
 
 function guardarPedido(lines, datos){
@@ -894,11 +929,12 @@ function sendOrder(){
   guardarPedido(lines, datos);
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 
-  // Pedido ya despachado por WhatsApp: dejamos todo listo para el próximo pedido.
+  // Pedido ya despachado por WhatsApp: dejamos todo listo para el próximo pedido y mostramos
+  // la confirmación (el drawer sigue abierto, no se cierra solo, para que el cierre se sienta).
   clearCart();
   ['cust-name', 'cust-address', 'cust-schedule', 'cust-note'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cust-payment').value = '';
-  closeCart();
+  mostrarConfirmacionPedido();
 }
 
 // ---------- Init ----------
