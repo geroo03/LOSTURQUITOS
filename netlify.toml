@@ -1,2 +1,9 @@
+# Sitio "losturquitos": Netlify compila el catálogo (frontend/) en cada push a main.
+# El build sale a deploy/tienda, que ya trae admin.html.
 [build]
-  publish = "prospeccion_condimentos_core/deploy/tienda"
+  base = "frontend"
+  command = "npm ci && npm run build"
+  publish = "../prospeccion_condimentos_core/deploy/tienda"
+
+[build.environment]
+  NODE_VERSION = "22"
