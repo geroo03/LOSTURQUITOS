@@ -1,0 +1,6 @@
+{
+  "name": "Los Turquitos - Especiera Mayorista",
+  "description": "Plataforma mayorista de condimentos, frutos secos y especias de molienda propia con atención directa por WhatsApp y diseño bento responsivo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

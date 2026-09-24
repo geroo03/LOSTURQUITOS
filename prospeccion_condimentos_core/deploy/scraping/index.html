@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Los Turquitos — Tablero de Leads</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Domine:wght@600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --border:#2a2f3a;
-    --text:#e8eaed; --muted:#9aa2b1;
-    --alta:#e5484d; --media:#f5a623; --baja:#5a6272;
-    --mayorista:#3ea6ff; --minorista:#7ee787; --live:#3ecf8e;
+    --bg:#fff8f0; --panel:#ffffff; --panel2:#fff3d7; --border:#efe1c2;
+    --text:#211b08; --muted:#404846;
+    --alta:#ba1a1a; --media:#b26a00; --baja:#707976;
+    --mayorista:#1f4e44; --minorista:#2f7a4d; --live:#1a9c4d;
   }
   *{box-sizing:border-box}
   body{
     margin:0; background:var(--bg); color:var(--text);
-    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    font-family:'Plus Jakarta Sans',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
   button{font-family:inherit}
@@ -38,7 +40,7 @@
     padding:9px 11px; border-radius:6px; font-size:13.5px;
   }
   #login-form button{
-    background:#2b6cb0; border:1px solid #2b6cb0; color:#fff; padding:9px; border-radius:6px;
+    background:#01372e; border:1px solid #01372e; color:#fff; padding:9px; border-radius:6px;
     font-size:13.5px; font-weight:600; cursor:pointer; margin-top:4px;
   }
   #login-form button:disabled{opacity:.6; cursor:default}
@@ -53,7 +55,7 @@
   header .sub{color:var(--muted); font-size:12px}
   .live-dot{
     display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--live);
-    border:1px solid rgba(62,207,142,.35); background:rgba(62,207,142,.1);
+    border:1px solid rgba(26,156,77,.35); background:rgba(26,156,77,.1);
     padding:3px 8px; border-radius:20px; white-space:nowrap;
   }
   .live-dot::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--live)}
@@ -62,7 +64,7 @@
     background:var(--panel2); border:1px solid var(--border); color:var(--text);
     padding:7px 12px; border-radius:6px; font-size:13px; cursor:pointer;
   }
-  .btn:hover{border-color:#3d4454}
+  .btn:hover{border-color:#c0c8c4}
   input[type=text], select{
     background:var(--panel2); border:1px solid var(--border); color:var(--text);
     padding:7px 10px; border-radius:6px; font-size:13px;
@@ -84,7 +86,7 @@
     background:var(--panel2); border-radius:10px; padding:1px 8px; font-size:11px; color:var(--muted);
   }
   .column-body{padding:10px; overflow-y:auto; flex:1; min-height:60px}
-  .column-body.dragover{background:#1c2735}
+  .column-body.dragover{background:#f4e7c8}
   .card{
     background:var(--panel2); border:1px solid var(--border); border-radius:8px;
     padding:10px; margin-bottom:10px; cursor:grab; font-size:12.5px;
@@ -94,29 +96,33 @@
   .card-title{font-weight:600; font-size:13px; margin-bottom:4px}
   .badges{display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px}
   .badge{border-radius:5px; padding:1px 6px; font-size:10.5px; font-weight:600; letter-spacing:.2px}
-  .badge.mayorista{background:rgba(62,166,255,.15); color:var(--mayorista)}
-  .badge.minorista{background:rgba(126,231,135,.15); color:var(--minorista)}
-  .badge.alta{background:rgba(229,72,77,.18); color:var(--alta)}
-  .badge.media{background:rgba(245,166,35,.18); color:var(--media)}
-  .badge.baja{background:rgba(90,98,114,.25); color:#c2c8d4}
+  .badge.mayorista{background:rgba(31,78,68,.12); color:var(--mayorista)}
+  .badge.minorista{background:rgba(47,122,77,.14); color:var(--minorista)}
+  .badge.alta{background:rgba(186,26,26,.12); color:var(--alta)}
+  .badge.media{background:rgba(178,106,0,.14); color:var(--media)}
+  .badge.baja{background:rgba(112,121,118,.18); color:#404846}
   .meta{color:var(--muted); font-size:11.5px; margin-bottom:6px; line-height:1.5}
   .mensaje-box{
-    width:100%; background:#141821; border:1px solid var(--border); color:#c7cbd4;
+    width:100%; background:#fff8f0; border:1px solid var(--border); color:#404846;
     font-size:11.5px; line-height:1.4; border-radius:5px; padding:6px 8px; margin:6px 0 4px;
     font-family:inherit; resize:vertical; box-sizing:border-box;
   }
-  .mensaje-reset{color:#7aa2f7; font-size:11px; cursor:pointer; margin-bottom:6px; display:inline-block; background:none; border:none; padding:0}
+  .mensaje-reset{color:#1f4e44; font-size:11px; cursor:pointer; margin-bottom:6px; display:inline-block; background:none; border:none; padding:0}
   .card-actions{display:flex; gap:6px; margin-top:6px}
   .card-actions button{
     flex:1; font-size:11px; padding:5px 6px; border-radius:5px; border:1px solid var(--border);
-    background:#141821; color:var(--text); cursor:pointer;
+    background:#fff8f0; color:var(--text); cursor:pointer;
   }
-  .card-actions button:hover{border-color:#3d4454}
-  .card-actions .wa{background:#1f6f4a; border-color:#1f6f4a}
+  .card-actions button:hover{border-color:#c0c8c4}
+  .card-actions .wa{background:#1ebe5d; border-color:#1ebe5d; color:#fff}
   #empty-state{
     margin:60px auto; text-align:center; color:var(--muted); max-width:420px; font-size:13px; line-height:1.6;
   }
   #empty-state code{background:var(--panel2); padding:1px 5px; border-radius:4px}
+
+  /* ---------- Tema Los Turquitos (mismo lenguaje visual que el catálogo) ---------- */
+  h1,h2,h3{font-family:'Domine',Georgia,serif}
+  ::selection{background:#01372e; color:#fff8f0}
 </style>
 </head>
 <body>

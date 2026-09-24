@@ -23,12 +23,11 @@ prospeccion_condimentos_core/
 │   ├── agente_prospeccion_condimentos.py, segmentar_leads.py, whatsapp_api_bot.py, etc.
 │   ├── tablero_leads.html            # panel de leads (kanban + mensaje editable por WhatsApp)
 │   └── LEADS_SEGMENTADOS/
-├── tienda/       # catálogo público + su panel de administración
-│   ├── catalogo_los_turquitos.html   # catálogo público
-│   └── panel_tienda.html             # panel de Karim: Pedidos, Productos, Configuración (logo)
+├── tienda/       # panel de administración de la tienda (el catálogo público vive en ../frontend)
+│   └── panel_tienda.html             # panel de Karim: Pedidos, Productos, Categorías, Configuración
 └── deploy/       # tres carpetas, cada una para su sitio de Netlify ya existente (deployados por Netlify Drop)
     ├── tienda/
-    │   ├── index.html   # copia de tienda/catalogo_los_turquitos.html   → sitio Netlify "losturquitos"
+    │   ├── index.html   # catálogo NUEVO (React), generado por `npm run build` en /frontend  → sitio Netlify "losturquitos"
     │   └── admin.html   # copia de tienda/panel_tienda.html             → mismo sitio, en /admin.html
     └── scraping/index.html   # copia de scraping/tablero_leads.html     → sitio Netlify "pospreccion-losturquitos"
 ```
@@ -110,3 +109,17 @@ Todos los scripts usan `python-decouple` para leer `SERPER_API_KEY` y `GROQ_API_
 ## Validado
 
 Se corrió un smoke test real (1 ciudad, tope 5) contra la API de Serper y contra `segmentar_leads.py` — ambos scripts funcionan de punta a punta y el `Hook de Venta` generado ofrece productos y precios reales de la lista de Karim. También se instaló `pandas` en `ai/.venv` (faltaba, y es requerido tanto por este script como por el original `agente_prospeccion.py`).
+
+
+## Front nuevo del catálogo (React + Vite + Tailwind)
+
+El catálogo público ahora vive en [`../frontend/`](../frontend/) (diseño tomado de `../referencia-figma/`, conectado a las mismas tablas de Supabase). La versión anterior (`tienda/catalogo_los_turquitos.html`) se eliminó; sigue disponible en el historial de git.
+
+```bash
+cd frontend
+npm install
+npm run dev      # desarrollo en http://localhost:5173
+npm run build    # genera deploy/tienda/index.html + assets/ + logo.jpg (no toca admin.html)
+```
+
+Después del build, arrastrar el contenido de `deploy/tienda/` al sitio **losturquitos** en Netlify como siempre.
