@@ -11,7 +11,8 @@ export interface Category {
 
 export interface Variant {
   unit: string; // 'KG', '500G', 'UNI', ...
-  price: number; // ARS por esa unidad
+  price: number; // ARS por esa unidad — ya es el precio final (el de oferta si la variante está en oferta)
+  listPrice?: number; // precio de lista, solo si la variante está en oferta (se muestra tachado)
 }
 
 export interface Product {
@@ -23,6 +24,7 @@ export interface Product {
   images: string[]; // portada primero, después la galería
   variants: Variant[]; // siempre al menos una
   featured: boolean;
+  onSale: boolean; // alguna variante tiene precio de oferta
 }
 
 /** Línea del carrito tal como se guarda (solo referencias, así los precios siempre salen del catálogo vigente). */
@@ -54,7 +56,8 @@ export interface StoreConfig {
   tagline: string | null;
 }
 
-export type CategoryFilter = 'todos' | 'destacados' | string;
+// 'destacados' = ofertas + destacados (lo mismo que muestra el carrusel); 'ofertas' = solo ofertas
+export type CategoryFilter = 'todos' | 'destacados' | 'ofertas' | string;
 
 export type Route =
   | { view: 'inicio' }

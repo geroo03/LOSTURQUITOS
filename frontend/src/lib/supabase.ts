@@ -15,6 +15,7 @@ interface ProductoRow {
   descripcion: string | null;
   imagenes: string[] | null;
   destacado: boolean | null;
+  precio_oferta?: number | null;
 }
 
 const slugify = (s: string) =>
@@ -32,15 +33,17 @@ export interface StoreData {
 }
 
 export async function loadStore(): Promise<StoreData> {
-  const [cats, prods, conf] = await Promise.all([
+  const COLS = 'id, categoria_id, categoria_label, nombre, unidad, precio, imagen_url, descripcion, imagenes, destacado';
+  const fetchProductos = (cols: string) =>
+    sb.from('productos').select(cols).eq('activo', true).order('id', { ascending: true });
+
+  const [cats, prodsWithOffer, conf] = await Promise.all([
     sb.from('categorias').select('id, label').order('orden', { ascending: true }),
-    sb
-      .from('productos')
-      .select('id, categoria_id, categoria_label, nombre, unidad, precio, imagen_url, descripcion, imagenes, destacado')
-      .eq('activo', true)
-      .order('id', { ascending: true }),
+    fetchProductos(`${COLS}, precio_oferta`),
     sb.from('configuracion').select('logo_url, fondo_url, tagline').eq('id', 1).maybeSingle(),
   ]);
+  // Si todavía no se corrió supabase_add_producto_oferta.sql, la columna no existe: el catálogo sigue andando sin ofertas.
+  const prods = prodsWithOffer.error ? await fetchProductos(COLS) : prodsWithOffer;
 
   if (cats.error) throw new Error(cats.error.message);
   if (prods.error) throw new Error(prods.error.message);
@@ -54,7 +57,7 @@ export async function loadStore(): Promise<StoreData> {
 
   // Las filas de `productos` son planas (una por variante); acá se agrupan por (categoría, nombre).
   const byKey = new Map<string, Product>();
-  (prods.data as ProductoRow[]).forEach((row) => {
+  (prods.data as unknown as ProductoRow[]).forEach((row) => {
     const id = `${row.categoria_id}--${slugify(row.nombre)}`;
     let p = byKey.get(id);
     if (!p) {
@@ -67,10 +70,14 @@ export async function loadStore(): Promise<StoreData> {
         images: [],
         variants: [],
         featured: false,
+        onSale: false,
       };
       byKey.set(id, p);
     }
-    p.variants.push({ unit: row.unidad, price: row.precio });
+    const offer = row.precio_oferta;
+    const onOffer = offer != null && offer < row.precio;
+    p.variants.push(onOffer ? { unit: row.unidad, price: offer, listPrice: row.precio } : { unit: row.unidad, price: row.precio });
+    if (onOffer) p.onSale = true;
     if (row.descripcion) p.description = row.descripcion;
     if (row.destacado) p.featured = true;
     [row.imagen_url, ...(row.imagenes ?? [])].forEach((url) => {

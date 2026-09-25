@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Product } from '../../types';
 import { money, unitLabel, waLink } from '../../lib/config';
 import { ProductImage } from '../ProductImage';
+import { PriceTag } from '../PriceTag';
 
 interface Props {
   product: Product;
@@ -94,7 +95,12 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
               <div>
                 <span className="font-mono text-[10px] text-[#707976] uppercase tracking-wider block">Precio</span>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="font-mono text-2xl sm:text-3xl font-bold text-[#01372e]">{money(variant.price)}</span>
+                  <PriceTag variant={variant} className="font-mono text-2xl sm:text-3xl font-bold text-[#01372e]" />
+                  {variant.listPrice && (
+                    <span className="font-mono text-[10px] font-bold uppercase bg-[#ba1a1a] text-white px-2 py-0.5 rounded">
+                      -{Math.round((1 - variant.price / variant.listPrice) * 100)}%
+                    </span>
+                  )}
                   <span className="font-mono text-[11px] text-[#49645c] font-bold">por {unitLabel(variant.unit)}</span>
                 </div>
               </div>
@@ -118,6 +124,7 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                       <span className="font-mono text-sm sm:text-base font-bold">{v.unit}</span>
                       <span className={`font-mono text-[10px] mt-1 ${v.unit === unit ? 'text-white/80' : 'text-[#404846]'}`}>
                         {money(v.price)}
+                        {v.listPrice && <s className="ml-1 opacity-60">{money(v.listPrice)}</s>}
                       </span>
                     </button>
                   ))}

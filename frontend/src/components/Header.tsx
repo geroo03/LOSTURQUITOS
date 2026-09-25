@@ -184,7 +184,7 @@ export function Header({
             </button>
             <button type="button" onClick={onOpenFeatured} className={`${navBtn(false)} flex items-center gap-1`}>
               <span className="material-symbols-outlined text-[16px] text-[#842401]">local_fire_department</span>
-              <span>Destacados</span>
+              <span>Ofertas y destacados</span>
             </button>
             <button type="button" onClick={onOpenHowToBuy} className={navBtn(false)}>
               Cómo comprar

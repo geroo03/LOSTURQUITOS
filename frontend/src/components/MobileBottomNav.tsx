@@ -32,7 +32,7 @@ export function MobileBottomNav({ activeView, onNavigate, onOpenFeatured }: Prop
 
         <button type="button" onClick={onOpenFeatured} className={tab(false)}>
           <span className="material-symbols-outlined text-[22px] text-[#842401]">local_fire_department</span>
-          <span className="text-[11px] leading-tight mt-0.5">Destacados</span>
+          <span className="text-[11px] leading-tight mt-0.5">Ofertas</span>
         </button>
 
         <a

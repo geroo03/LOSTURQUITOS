@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Product } from '../types';
-import { money, unitLabel } from '../lib/config';
+import { unitLabel } from '../lib/config';
+import { PriceTag } from './PriceTag';
 import { ProductImage } from './ProductImage';
 
 interface Props {
@@ -26,9 +27,13 @@ export function ProductCard({ product, onOpen, onAdd }: Props) {
 
   return (
     <article className="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#efe1c2] shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-all">
-      {product.featured && (
-        <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-[#842401] text-white font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shadow-xs">
-          Destacado
+      {(product.onSale || product.featured) && (
+        <span
+          className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-white font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shadow-xs ${
+            product.onSale ? 'bg-[#ba1a1a]' : 'bg-[#842401]'
+          }`}
+        >
+          {product.onSale ? 'Oferta' : 'Destacado'}
         </span>
       )}
 
@@ -76,7 +81,7 @@ export function ProductCard({ product, onOpen, onAdd }: Props) {
         )}
 
         <div className="flex items-baseline justify-between">
-          <span className="font-mono text-sm sm:text-base font-bold text-[#01372e]">{money(variant.price)}</span>
+          <PriceTag variant={variant} className="font-mono text-sm sm:text-base font-bold text-[#01372e]" />
           <span className="font-mono text-[10px] text-[#49645c] font-semibold">por {unitLabel(variant.unit)}</span>
         </div>
 

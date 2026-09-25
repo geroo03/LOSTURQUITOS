@@ -140,6 +140,10 @@
     background:rgba(178,106,0,.14); color:var(--media); border-radius:5px; padding:1px 6px;
     font-size:10px; font-weight:600; margin-left:6px;
   }
+  .badge-oferta{
+    background:rgba(186,26,26,.12); color:var(--alta); border-radius:5px; padding:1px 6px;
+    font-size:10px; font-weight:600; margin-left:6px;
+  }
   .producto-row-actions{display:flex; gap:6px}
   .producto-row-actions button{
     font-size:11px; padding:5px 8px; border-radius:5px; border:1px solid var(--border);
@@ -295,6 +299,15 @@
   <div class="check-row">
     <input type="checkbox" id="pf-activo" checked>
     <label for="pf-activo">Visible en el catálogo</label>
+  </div>
+
+  <div class="check-row">
+    <input type="checkbox" id="pf-oferta" onchange="document.getElementById('pf-precio-oferta-wrap').style.display = this.checked ? '' : 'none'">
+    <label for="pf-oferta">Producto en oferta (aparece en el carrusel de ofertas y destacados)</label>
+  </div>
+  <div id="pf-precio-oferta-wrap" style="display:none">
+    <label for="pf-precio-oferta">Precio de oferta (tiene que ser menor al precio normal)</label>
+    <input type="number" id="pf-precio-oferta" min="0" step="1" placeholder="0">
   </div>
 
   <div class="check-row">
@@ -661,10 +674,13 @@ function productoRowHTML(p){
         <span class="producto-nombre">${escapeHtml(p.nombre)}</span>
         ${!p.activo ? '<span class="badge-inactivo">Inactivo</span>' : ''}
         ${p.destacado ? '<span class="badge-destacado">★ Destacado</span>' : ''}
+        ${p.precio_oferta != null && p.precio_oferta < p.precio ? '<span class="badge-oferta">% Oferta</span>' : ''}
       </td>
       <td>${escapeHtml(categoriaLabel(p.categoria_id))}</td>
       <td>${escapeHtml(p.unidad || '')}</td>
-      <td>${money(p.precio)}</td>
+      <td>${p.precio_oferta != null && p.precio_oferta < p.precio
+        ? `<s style="color:var(--muted)">${money(p.precio)}</s> <strong style="color:var(--alta)">${money(p.precio_oferta)}</strong>`
+        : money(p.precio)}</td>
       <td>
         <div class="producto-row-actions">
           <button onclick="openProductoModal(${p.id})">Editar</button>
@@ -771,6 +787,10 @@ function openProductoModal(id){
   document.getElementById('pf-precio').value = p ? p.precio : '';
   document.getElementById('pf-activo').checked = p ? !!p.activo : true;
   document.getElementById('pf-destacado').checked = p ? !!p.destacado : false;
+  const enOferta = !!(p && p.precio_oferta != null && p.precio_oferta < p.precio);
+  document.getElementById('pf-oferta').checked = enOferta;
+  document.getElementById('pf-precio-oferta').value = enOferta ? p.precio_oferta : '';
+  document.getElementById('pf-precio-oferta-wrap').style.display = enOferta ? '' : 'none';
   document.getElementById('pf-descripcion').value = p ? (p.descripcion || '') : '';
   document.getElementById('pf-delete').style.display = p ? '' : 'none';
   document.getElementById('pf-portada-status').textContent = '';
@@ -856,11 +876,17 @@ async function guardarProducto(){
   const precio = parseInt(document.getElementById('pf-precio').value, 10);
   const activo = document.getElementById('pf-activo').checked;
   const destacado = document.getElementById('pf-destacado').checked;
+  const enOferta = document.getElementById('pf-oferta').checked;
+  const precioOferta = parseInt(document.getElementById('pf-precio-oferta').value, 10);
   const descripcion = document.getElementById('pf-descripcion').value.trim();
   const errorEl = document.getElementById('producto-error');
 
   if (!nombre || !unidad || !Number.isFinite(precio) || precio < 0){
     errorEl.textContent = 'Completá nombre, unidad y un precio válido.';
+    return;
+  }
+  if (enOferta && (!Number.isFinite(precioOferta) || precioOferta < 0 || precioOferta >= precio)){
+    errorEl.textContent = 'El precio de oferta tiene que ser un número menor al precio normal.';
     return;
   }
   errorEl.textContent = '';
@@ -871,6 +897,12 @@ async function guardarProducto(){
     imagen_url: productoPortadaUrl,
     imagenes: productoGaleriaUrls,
   };
+
+  // Solo se manda precio_oferta si hace falta, así guardar productos sigue andando aunque todavía no se haya
+  // corrido supabase_add_producto_oferta.sql (la columna no existiría).
+  const existente = productoEditId ? productos.find(x => x.id === productoEditId) : null;
+  if (enOferta) payload.precio_oferta = precioOferta;
+  else if (existente && 'precio_oferta' in existente) payload.precio_oferta = null;
 
   const saveBtn = document.getElementById('pf-save');
   saveBtn.disabled = true;

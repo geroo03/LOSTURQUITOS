@@ -123,3 +123,7 @@ npm run build    # genera deploy/tienda/index.html + assets/ + logo.jpg (no toca
 ```
 
 Después del build, arrastrar el contenido de `deploy/tienda/` al sitio **losturquitos** en Netlify como siempre.
+
+### Ofertas
+
+Para poder marcar productos en oferta hay que correr **una vez** `supabase/supabase_add_producto_oferta.sql` en el SQL Editor de Supabase. Después, en el panel: *Productos → Editar → "Producto en oferta"* y poner el precio de oferta. Los productos en oferta y los marcados como destacados aparecen juntos en el carrusel del inicio.

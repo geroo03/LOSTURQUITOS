@@ -44,13 +44,15 @@ export function CatalogView({
     products.forEach((p) => (m[p.categoryId] = (m[p.categoryId] ?? 0) + 1));
     return m;
   }, [products]);
-  const featuredCount = products.filter((p) => p.featured).length;
+  const featuredCount = products.filter((p) => p.featured || p.onSale).length;
+  const saleCount = products.filter((p) => p.onSale).length;
 
   const filtered = useMemo(() => {
     const q = normalize(searchQuery.trim());
     const list = products.filter((p) => {
-      if (selectedCategory === 'destacados' && !p.featured) return false;
-      if (selectedCategory !== 'todos' && selectedCategory !== 'destacados' && p.categoryId !== selectedCategory) return false;
+      if (selectedCategory === 'destacados' && !p.featured && !p.onSale) return false;
+      if (selectedCategory === 'ofertas' && !p.onSale) return false;
+      if (!['todos', 'destacados', 'ofertas'].includes(selectedCategory) && p.categoryId !== selectedCategory) return false;
       if (q && !normalize(`${p.title} ${p.categoryLabel} ${p.description ?? ''}`).includes(q)) return false;
       if (minPrice(p) > limit) return false;
       return true;
@@ -69,7 +71,8 @@ export function CatalogView({
 
   const options = [
     { id: 'todos', label: 'Todas las categorías', count: products.length },
-    ...(featuredCount ? [{ id: 'destacados', label: 'Destacados', count: featuredCount }] : []),
+    ...(featuredCount ? [{ id: 'destacados', label: 'Ofertas y destacados', count: featuredCount }] : []),
+    ...(saleCount ? [{ id: 'ofertas', label: 'Solo ofertas', count: saleCount }] : []),
     ...categories.map((c) => ({ id: c.id, label: c.label, count: counts[c.id] ?? 0 })),
   ];
 

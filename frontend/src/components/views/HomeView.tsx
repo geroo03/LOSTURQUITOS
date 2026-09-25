@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Category, CategoryFilter, Product, StoreConfig } from '../../types';
 import { DEFAULT_TAGLINE, WHATSAPP_DISPLAY, waLink } from '../../lib/config';
-import { ProductCard } from '../ProductCard';
+import { FeaturedCarousel } from '../FeaturedCarousel';
 
 interface Props {
   products: Product[];
@@ -19,11 +19,11 @@ const STEPS = [
 ];
 
 export function HomeView({ products, categories, config, onSelectProduct, onAddToCart, onGoToCatalog }: Props) {
-  // Destacados marcados desde el panel; si todavía no hay ninguno, se muestran los primeros del catálogo.
-  const spotlight = useMemo(() => {
-    const featured = products.filter((p) => p.featured);
-    return (featured.length ? featured : products).slice(0, 8);
-  }, [products]);
+  // Carrusel: primero las ofertas, después los destacados. Si Karim no marcó ninguno, la sección no aparece.
+  const spotlight = useMemo(
+    () => [...products.filter((p) => p.onSale), ...products.filter((p) => p.featured && !p.onSale)].slice(0, 16),
+    [products],
+  );
 
   // Mosaico de rubros: la portada de cada rubro es la primera foto de sus productos.
   const tiles = useMemo(
@@ -132,7 +132,7 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
             className="shrink-0 px-4 py-2 rounded-xl bg-[#01372e] text-white text-xs sm:text-sm font-semibold shadow-sm flex items-center gap-1.5 active:scale-95 transition-transform"
           >
             <span className="material-symbols-outlined text-[16px] text-[#ffb59e]">bolt</span>
-            <span>Destacados</span>
+            <span>Ofertas y destacados</span>
           </button>
           {categories.map((c) => (
             <button
@@ -243,26 +243,8 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
         </div>
       </section>
 
-      {/* 5. Destacados */}
-      {spotlight.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#01372e] font-bold">Destacados</h2>
-            <button
-              type="button"
-              onClick={() => onGoToCatalog('destacados')}
-              className="text-xs sm:text-sm font-bold text-[#49645c] hover:text-[#01372e] transition-colors"
-            >
-              Ver más →
-            </button>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {spotlight.map((p) => (
-              <ProductCard key={p.id} product={p} onOpen={onSelectProduct} onAdd={onAddToCart} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* 5. Carrusel de ofertas y destacados */}
+      <FeaturedCarousel products={spotlight} onOpen={onSelectProduct} onAdd={onAddToCart} onSeeAll={onGoToCatalog} />
 
       {/* 6. Contacto */}
       <section className="rounded-2xl bg-[#f4e7c8] p-4 sm:p-5 shadow-sm flex items-center gap-4 border border-[#efe1c2]">
