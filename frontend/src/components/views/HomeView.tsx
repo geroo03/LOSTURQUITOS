@@ -119,7 +119,10 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
         </div>
       </section>
 
-      {/* 2. Chips de categorías */}
+      {/* 2. Carrusel de ofertas y destacados (arriba, para que se vea sin scrollear de más) */}
+      <FeaturedCarousel products={spotlight} onOpen={onSelectProduct} onAdd={onAddToCart} onSeeAll={onGoToCatalog} />
+
+      {/* 3. Chips de categorías */}
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between px-1">
           <span className="font-mono text-xs uppercase text-[#842401] font-bold tracking-wider">Categorías</span>
@@ -242,9 +245,6 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
           ))}
         </div>
       </section>
-
-      {/* 5. Carrusel de ofertas y destacados */}
-      <FeaturedCarousel products={spotlight} onOpen={onSelectProduct} onAdd={onAddToCart} onSeeAll={onGoToCatalog} />
 
       {/* 6. Contacto */}
       <section className="rounded-2xl bg-[#f4e7c8] p-4 sm:p-5 shadow-sm flex items-center gap-4 border border-[#efe1c2]">

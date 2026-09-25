@@ -16,25 +16,32 @@ const AUTOPLAY_MS = 4500;
 /** Carrusel de ofertas y destacados: scroll con snap (tocar/arrastrar), flechas y avance automático que se pausa al interactuar. */
 export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
   const track = useRef<HTMLDivElement>(null);
-  const paused = useRef(false);
+  const paused = useRef(false); // pausa temporal por mouse/foco/touch
+  const [playing, setPlaying] = useState(true); // pausa elegida con el botón
+  const playingRef = useRef(true);
   const [added, setAdded] = useState<string | null>(null);
 
   const scrollByPage = useCallback((dir: 1 | -1) => {
     const el = track.current;
     if (!el) return;
     const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-    if (dir === 1 && atEnd) el.scrollTo({ left: 0, behavior: 'smooth' });
-    else el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+    // Con "Reducir movimiento" activado en el sistema el carrusel igual avanza, pero sin animación de deslizamiento.
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    if (dir === 1 && atEnd) el.scrollTo({ left: 0, behavior });
+    else el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior });
   }, []);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const id = setInterval(() => {
-      if (!paused.current && !document.hidden) scrollByPage(1);
+      if (playingRef.current && !paused.current && !document.hidden) scrollByPage(1);
     }, AUTOPLAY_MS);
     return () => clearInterval(id);
   }, [scrollByPage]);
 
+  const togglePlaying = () => {
+    playingRef.current = !playingRef.current;
+    setPlaying(playingRef.current);
+  };
   const pause = () => (paused.current = true);
   const resume = () => (paused.current = false);
 
@@ -60,6 +67,14 @@ export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
             className="hidden sm:inline text-xs sm:text-sm font-bold text-[#49645c] hover:text-[#01372e] transition-colors mr-1"
           >
             Ver todos →
+          </button>
+          <button
+            type="button"
+            onClick={togglePlaying}
+            aria-label={playing ? 'Pausar carrusel' : 'Reproducir carrusel'}
+            className="w-9 h-9 rounded-full bg-[#f4e7c8] hover:bg-[#efe1c2] text-[#01372e] flex items-center justify-center active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined text-[20px]">{playing ? 'pause' : 'play_arrow'}</span>
           </button>
           {(['prev', 'next'] as const).map((d) => (
             <button
