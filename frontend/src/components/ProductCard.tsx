@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Product } from '../types';
-import { unitLabel } from '../lib/config';
+import { unitLabel, waLink } from '../lib/config';
 import { PriceTag } from './PriceTag';
 import { ProductImage } from './ProductImage';
 
@@ -12,7 +12,7 @@ interface Props {
 
 /** Tarjeta de producto compartida por Inicio (destacados) y Catálogo: variantes, cantidad y "Agregar". */
 export function ProductCard({ product, onOpen, onAdd }: Props) {
-  const [unit, setUnit] = useState(product.variants[0].unit);
+  const [unit, setUnit] = useState((product.variants.find((v) => !v.soldOut) ?? product.variants[0]).unit);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -27,7 +27,11 @@ export function ProductCard({ product, onOpen, onAdd }: Props) {
 
   return (
     <article className="bg-white rounded-2xl p-3 sm:p-3.5 border border-[#efe1c2] shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-all">
-      {(product.onSale || product.featured) && (
+      {variant.soldOut ? (
+        <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-[#404846] text-white font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shadow-xs">
+          Sin stock
+        </span>
+      ) : (product.onSale || product.featured) && (
         <span
           className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full text-white font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shadow-xs ${
             product.onSale ? 'bg-[#ba1a1a]' : 'bg-[#842401]'
@@ -72,7 +76,7 @@ export function ProductCard({ product, onOpen, onAdd }: Props) {
                 onClick={() => setUnit(v.unit)}
                 className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold transition-colors ${
                   v.unit === unit ? 'bg-[#01372e] text-white' : 'bg-[#f4e7c8] text-[#211b08] hover:bg-[#efe1c2]'
-                }`}
+                } ${v.soldOut ? 'line-through opacity-60' : ''}`}
               >
                 {v.unit}
               </button>
@@ -85,6 +89,18 @@ export function ProductCard({ product, onOpen, onAdd }: Props) {
           <span className="font-mono text-[10px] text-[#49645c] font-semibold">por {unitLabel(variant.unit)}</span>
         </div>
 
+        {variant.soldOut ? (
+          <a
+            href={waLink(`Hola Karim, avisame cuando vuelva ${product.title} (${variant.unit})`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-2 bg-[#efe1c2] hover:bg-[#faedcd] text-[#01372e] rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px] text-[#842401]">notifications</span>
+            <span>Avisarme</span>
+          </a>
+        ) : (
+          <>
         <div className="flex items-center justify-between bg-[#f4e7c8] rounded-lg p-0.5">
           <button
             type="button"
@@ -115,6 +131,8 @@ export function ProductCard({ product, onOpen, onAdd }: Props) {
           <span className="material-symbols-outlined text-[16px]">{added ? 'check' : 'add_shopping_cart'}</span>
           <span>{added ? '¡Agregado!' : 'Agregar'}</span>
         </button>
+          </>
+        )}
       </div>
     </article>
   );

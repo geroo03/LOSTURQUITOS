@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CartItem, CheckoutForm } from '../../types';
+import { CartItem, CheckoutForm, LastOrderInfo } from '../../types';
 import { money, waLink } from '../../lib/config';
 import { savePedido } from '../../lib/supabase';
 import { ProductImage } from '../ProductImage';
@@ -11,6 +11,9 @@ interface Props {
   onRemoveItem: (key: string) => void;
   onClearCart: () => void;
   onContinueShopping: () => void;
+  lastOrder: LastOrderInfo | null;
+  onRepeatLastOrder: () => void;
+  onOrderSent: (items: CartItem[]) => void;
 }
 
 const EMPTY_FORM: CheckoutForm = { name: '', address: '', payment: '', schedule: '', note: '' };
@@ -37,7 +40,7 @@ function buildMessage(items: CartItem[], total: number, f: CheckoutForm) {
   return msg;
 }
 
-export function CartView({ items, total, onUpdateQuantity, onRemoveItem, onClearCart, onContinueShopping }: Props) {
+export function CartView({ items, total, onUpdateQuantity, onRemoveItem, onClearCart, onContinueShopping, lastOrder, onRepeatLastOrder, onOrderSent }: Props) {
   const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
   const [sent, setSent] = useState(false);
   const set = (patch: Partial<CheckoutForm>) => setForm((f) => ({ ...f, ...patch }));
@@ -47,6 +50,7 @@ export function CartView({ items, total, onUpdateQuantity, onRemoveItem, onClear
   const sendOrder = () => {
     if (!items.length) return;
     savePedido(items, form, total);
+    onOrderSent(items);
     window.open(waLink(buildMessage(items, total, form)), '_blank');
     onClearCart();
     setForm(EMPTY_FORM);
@@ -105,10 +109,22 @@ export function CartView({ items, total, onUpdateQuantity, onRemoveItem, onClear
           <span className="material-symbols-outlined text-[48px] text-[#707976]">shopping_basket</span>
           <h3 className="font-serif text-lg font-bold text-[#01372e]">Tu pedido está vacío</h3>
           <p className="text-xs text-[#404846] max-w-sm">Explorá el catálogo y sumá productos para armar tu pedido.</p>
+          {lastOrder && (
+            <button
+              type="button"
+              onClick={onRepeatLastOrder}
+              className="mt-2 px-5 py-2.5 bg-[#1ebe5d] hover:bg-[#19a550] text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[16px]">history</span>
+              <span>
+                Repetir mi último pedido ({lastOrder.count} {lastOrder.count === 1 ? 'producto' : 'productos'} · {new Date(lastOrder.at).toLocaleDateString('es-AR')})
+              </span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onContinueShopping}
-            className="mt-2 px-5 py-2.5 bg-[#01372e] hover:bg-[#1f4e44] text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
+            className={`${lastOrder ? '' : 'mt-2 '}px-5 py-2.5 bg-[#01372e] hover:bg-[#1f4e44] text-white rounded-xl text-xs font-semibold transition-all shadow-sm`}
           >
             Ir al catálogo
           </button>

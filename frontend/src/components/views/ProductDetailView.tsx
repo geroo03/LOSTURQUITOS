@@ -14,7 +14,7 @@ interface Props {
 
 export function ProductDetailView({ product, allProducts, onBack, onSelectProduct, onAddToCart }: Props) {
   const [imageIdx, setImageIdx] = useState(0);
-  const [unit, setUnit] = useState(product.variants[0].unit);
+  const [unit, setUnit] = useState((product.variants.find((v) => !v.soldOut) ?? product.variants[0]).unit);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -121,7 +121,8 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                           : 'bg-[#fff3d7] text-[#211b08] hover:bg-[#faedcd] border-[#efe1c2]'
                       }`}
                     >
-                      <span className="font-mono text-sm sm:text-base font-bold">{v.unit}</span>
+                      <span className={`font-mono text-sm sm:text-base font-bold ${v.soldOut ? 'line-through opacity-60' : ''}`}>{v.unit}</span>
+                      {v.soldOut && <span className="font-mono text-[9px] uppercase font-bold text-[#ba1a1a] mt-0.5">Sin stock</span>}
                       <span className={`font-mono text-[10px] mt-1 ${v.unit === unit ? 'text-white/80' : 'text-[#404846]'}`}>
                         {money(v.price)}
                         {v.listPrice && <s className="ml-1 opacity-60">{money(v.listPrice)}</s>}
@@ -132,6 +133,23 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
               </div>
             )}
 
+            {variant.soldOut ? (
+              <div className="bg-[#faedcd]/60 p-4 rounded-xl border border-[#efe1c2] flex flex-col gap-3">
+                <p className="text-sm text-[#404846]">
+                  <strong className="text-[#ba1a1a]">Sin stock</strong> en esta presentación por el momento.
+                </p>
+                <a
+                  href={waLink(`Hola Karim, avisame cuando vuelva ${product.title} (${variant.unit})`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-12 rounded-xl bg-[#1ebe5d] hover:bg-[#19a550] text-white flex items-center justify-center gap-2 font-bold text-sm shadow-sm transition-all active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[20px]">notifications</span>
+                  <span>Avisarme cuando vuelva</span>
+                </a>
+              </div>
+            ) : (
+              <>
             <div className="bg-[#faedcd]/60 p-3.5 sm:p-4 rounded-xl border border-[#efe1c2] flex items-center justify-between gap-3">
               <div>
                 <span className="text-xs text-[#404846] block font-medium">Cantidad:</span>
@@ -185,6 +203,8 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                 <span>Consultar a Karim</span>
               </a>
             </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -222,7 +242,8 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                     <button
                       type="button"
                       onClick={() => onAddToCart(rel, rel.variants[0].unit, 1)}
-                      className="px-2.5 py-1 rounded-lg bg-[#01372e] text-white text-[11px] font-semibold hover:bg-[#1f4e44] transition-colors flex items-center gap-1"
+                      disabled={rel.variants[0].soldOut}
+                      className="disabled:opacity-40 disabled:cursor-not-allowed px-2.5 py-1 rounded-lg bg-[#01372e] text-white text-[11px] font-semibold hover:bg-[#1f4e44] transition-colors flex items-center gap-1"
                     >
                       <span className="material-symbols-outlined text-[14px]">add</span>
                       <span>Sumar</span>

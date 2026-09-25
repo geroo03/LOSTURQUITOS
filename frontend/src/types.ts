@@ -13,6 +13,7 @@ export interface Variant {
   unit: string; // 'KG', '500G', 'UNI', ...
   price: number; // ARS por esa unidad — ya es el precio final (el de oferta si la variante está en oferta)
   listPrice?: number; // precio de lista, solo si la variante está en oferta (se muestra tachado)
+  soldOut?: boolean; // marcada "sin stock" desde el panel
 }
 
 export interface Product {
@@ -25,6 +26,7 @@ export interface Product {
   variants: Variant[]; // siempre al menos una
   featured: boolean;
   onSale: boolean; // alguna variante tiene precio de oferta
+  soldOut: boolean; // todas las variantes sin stock
 }
 
 /** Línea del carrito tal como se guarda (solo referencias, así los precios siempre salen del catálogo vigente). */
@@ -66,3 +68,9 @@ export type Route =
   | { view: 'producto'; productId: string };
 
 export type AppView = Route['view'];
+
+/** Resumen del último pedido enviado (guardado en el navegador) que todavía se puede repetir. */
+export interface LastOrderInfo {
+  count: number; // productos que siguen disponibles en el catálogo
+  at: string; // ISO
+}

@@ -35,7 +35,7 @@ export function useCart(products: Product[]) {
     lines.forEach((l) => {
       const product = byId.get(l.productId);
       const variant = product?.variants.find((v) => v.unit === l.unit);
-      if (!product || !variant) return;
+      if (!product || !variant || variant.soldOut) return;
       out.push({
         key: `${l.productId}|${l.unit}`,
         product,

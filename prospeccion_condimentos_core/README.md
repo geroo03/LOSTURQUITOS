@@ -127,3 +127,12 @@ Después del build, arrastrar el contenido de `deploy/tienda/` al sitio **lostur
 ### Ofertas
 
 Para poder marcar productos en oferta hay que correr **una vez** `supabase/supabase_add_producto_oferta.sql` en el SQL Editor de Supabase. Después, en el panel: *Productos → Editar → "Producto en oferta"* y poner el precio de oferta. Los productos en oferta y los marcados como destacados aparecen juntos en el carrusel del inicio.
+
+### Sin stock, presupuestos y lista de precios
+
+Correr **una vez** en el SQL Editor de Supabase: `supabase/supabase_add_producto_sin_stock.sql` y `supabase/supabase_setup_presupuestos.sql`.
+
+- **Sin stock:** en el panel (*Productos*), botón "Sin stock" / "Hay stock" por presentación. En el catálogo el producto se ve pero no se puede pedir ("Avisarme" por WhatsApp).
+- **Presupuestos (panel):** pestaña *Presupuestos*. Karim arma un presupuesto (cliente, productos con precio y cantidad editables, descuento, validez, nota), lo guarda en el historial, lo baja en PDF, lo manda por WhatsApp, y puede **Repetir** uno anterior (copia nueva; el original no se toca) y actualizar los precios a los de hoy.
+- **Lista de precios (catálogo):** botón "Descargar lista de precios (PDF)", generado en el navegador con los precios y ofertas actuales.
+- **Repetir último pedido (catálogo):** el navegador guarda el último pedido enviado y ofrece cargarlo de nuevo al carrito.

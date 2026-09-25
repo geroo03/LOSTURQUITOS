@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { CartItem, Category, CheckoutForm, Product, StoreConfig } from '../types';
+import { CartItem, Category, CheckoutForm, Product, StoreConfig, Variant } from '../types';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config';
 
 export const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -16,6 +16,7 @@ interface ProductoRow {
   imagenes: string[] | null;
   destacado: boolean | null;
   precio_oferta?: number | null;
+  sin_stock?: boolean | null;
 }
 
 const slugify = (s: string) =>
@@ -37,13 +38,16 @@ export async function loadStore(): Promise<StoreData> {
   const fetchProductos = (cols: string) =>
     sb.from('productos').select(cols).eq('activo', true).order('id', { ascending: true });
 
-  const [cats, prodsWithOffer, conf] = await Promise.all([
+  const [cats, first, conf] = await Promise.all([
     sb.from('categorias').select('id, label').order('orden', { ascending: true }),
-    fetchProductos(`${COLS}, precio_oferta`),
+    fetchProductos(`${COLS}, precio_oferta, sin_stock`),
     sb.from('configuracion').select('logo_url, fondo_url, tagline').eq('id', 1).maybeSingle(),
   ]);
-  // Si todavía no se corrió supabase_add_producto_oferta.sql, la columna no existe: el catálogo sigue andando sin ofertas.
-  const prods = prodsWithOffer.error ? await fetchProductos(COLS) : prodsWithOffer;
+  // Columnas opcionales (precio_oferta, sin_stock): si todavía no se corrió su SQL, se reintenta sin ellas
+  // para que el catálogo siga funcionando.
+  let prods = first;
+  if (prods.error) prods = await fetchProductos(`${COLS}, precio_oferta`);
+  if (prods.error) prods = await fetchProductos(COLS);
 
   if (cats.error) throw new Error(cats.error.message);
   if (prods.error) throw new Error(prods.error.message);
@@ -71,12 +75,15 @@ export async function loadStore(): Promise<StoreData> {
         variants: [],
         featured: false,
         onSale: false,
+        soldOut: false,
       };
       byKey.set(id, p);
     }
     const offer = row.precio_oferta;
     const onOffer = offer != null && offer < row.precio;
-    p.variants.push(onOffer ? { unit: row.unidad, price: offer, listPrice: row.precio } : { unit: row.unidad, price: row.precio });
+    const variant: Variant = onOffer ? { unit: row.unidad, price: offer, listPrice: row.precio } : { unit: row.unidad, price: row.precio };
+    if (row.sin_stock) variant.soldOut = true;
+    p.variants.push(variant);
     if (onOffer) p.onSale = true;
     if (row.descripcion) p.description = row.descripcion;
     if (row.destacado) p.featured = true;
@@ -84,6 +91,8 @@ export async function loadStore(): Promise<StoreData> {
       if (url && !p!.images.includes(url)) p!.images.push(url);
     });
   });
+
+  byKey.forEach((p) => (p.soldOut = p.variants.every((v) => v.soldOut)));
 
   // Solo aparecen categorías que existen en la tabla `categorias`, en el orden que definió Karim.
   const categories = cats.data as Category[];

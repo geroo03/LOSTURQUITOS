@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CategoryFilter, Product } from './types';
+import { CartItem, CategoryFilter, LastOrderInfo, Product } from './types';
 import { DEFAULT_LOGO_URL, LOCAL_LOGO, waLink } from './lib/config';
 import { StoreData, loadStore } from './lib/supabase';
 import { useCart } from './lib/useCart';
+import { LastOrder, loadLastOrder, saveLastOrder } from './lib/lastOrder';
 import { useRoute } from './lib/useRoute';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -25,6 +26,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [howToOpen, setHowToOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [lastOrder, setLastOrder] = useState<LastOrder | null>(loadLastOrder);
 
   const fetchStore = useCallback(() => {
     setLoad({ status: 'loading' });
@@ -54,6 +56,37 @@ export default function App() {
     },
     [cart.add],
   );
+
+  // Último pedido: cuántos de sus productos siguen disponibles hoy (para mostrar "Repetir mi último pedido")
+  const lastOrderInfo: LastOrderInfo | null = useMemo(() => {
+    if (!lastOrder || load.status !== 'ready') return null;
+    const count = lastOrder.lines.filter((l) => {
+      const v = data.products.find((p) => p.id === l.productId)?.variants.find((x) => x.unit === l.unit);
+      return v && !v.soldOut;
+    }).length;
+    return count ? { count, at: lastOrder.at } : null;
+  }, [lastOrder, data.products, load.status]);
+
+  const rememberOrder = (items: CartItem[]) =>
+    setLastOrder(saveLastOrder(items.map((i) => ({ productId: i.product.id, unit: i.variant.unit, quantity: i.quantity }))));
+
+  const repeatLastOrder = () => {
+    if (!lastOrder) return;
+    let added = 0;
+    lastOrder.lines.forEach((l) => {
+      const p = data.products.find((x) => x.id === l.productId);
+      const v = p?.variants.find((x) => x.unit === l.unit);
+      if (!p || !v || v.soldOut) return;
+      cart.add(p.id, l.unit, l.quantity);
+      added += 1;
+    });
+    const skipped = lastOrder.lines.length - added;
+    setToast(
+      `Se cargaron ${added} producto${added === 1 ? '' : 's'} de tu último pedido` +
+        (skipped ? ` (${skipped} ya no ${skipped === 1 ? 'está disponible' : 'están disponibles'})` : ''),
+    );
+    navigate({ view: 'carrito' });
+  };
 
   const openProduct = (p: Product) => navigate({ view: 'producto', productId: p.id });
   const goToCatalog = (category?: CategoryFilter) => {
@@ -100,6 +133,8 @@ export default function App() {
         onSelectProduct={openProduct}
         onAddToCart={addToCart}
         onGoToCatalog={goToCatalog}
+        lastOrder={lastOrderInfo}
+        onRepeatLastOrder={repeatLastOrder}
       />
     );
   } else if (route.view === 'catalogo') {
@@ -144,6 +179,9 @@ export default function App() {
         onRemoveItem={cart.remove}
         onClearCart={cart.clear}
         onContinueShopping={() => goToCatalog()}
+        lastOrder={lastOrderInfo}
+        onRepeatLastOrder={repeatLastOrder}
+        onOrderSent={rememberOrder}
       />
     );
   }

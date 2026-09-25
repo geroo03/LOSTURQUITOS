@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { Category, CategoryFilter, Product, StoreConfig } from '../../types';
+import { Category, CategoryFilter, LastOrderInfo, Product, StoreConfig } from '../../types';
 import { DEFAULT_TAGLINE, WHATSAPP_DISPLAY, waLink } from '../../lib/config';
 import { FeaturedCarousel } from '../FeaturedCarousel';
+import { PriceListButton } from '../PriceListButton';
 
 interface Props {
   products: Product[];
@@ -10,6 +11,8 @@ interface Props {
   onSelectProduct: (product: Product) => void;
   onAddToCart: (product: Product, unit: string, quantity: number) => void;
   onGoToCatalog: (category?: CategoryFilter) => void;
+  lastOrder: LastOrderInfo | null;
+  onRepeatLastOrder: () => void;
 }
 
 const STEPS = [
@@ -18,10 +21,10 @@ const STEPS = [
   { t: 'Karim confirma por WhatsApp', d: 'Se abre WhatsApp con todo armado y coordinamos la entrega.' },
 ];
 
-export function HomeView({ products, categories, config, onSelectProduct, onAddToCart, onGoToCatalog }: Props) {
+export function HomeView({ products, categories, config, onSelectProduct, onAddToCart, onGoToCatalog, lastOrder, onRepeatLastOrder }: Props) {
   // Carrusel: primero las ofertas, después los destacados. Si Karim no marcó ninguno, la sección no aparece.
   const spotlight = useMemo(
-    () => [...products.filter((p) => p.onSale), ...products.filter((p) => p.featured && !p.onSale)].slice(0, 16),
+    () => [...products.filter((p) => p.onSale && !p.soldOut), ...products.filter((p) => p.featured && !p.onSale && !p.soldOut)].slice(0, 16),
     [products],
   );
 
@@ -118,6 +121,26 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
           </div>
         </div>
       </section>
+
+      {/* Repetir último pedido */}
+      {lastOrder && (
+        <button
+          type="button"
+          onClick={onRepeatLastOrder}
+          className="w-full text-left rounded-2xl bg-white border border-[#efe1c2] shadow-sm hover:shadow-md p-3.5 sm:p-4 flex items-center gap-3 transition-all active:scale-[0.99]"
+        >
+          <span className="w-10 h-10 rounded-xl bg-[#c8e6dd] text-[#01372e] flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-[22px]">history</span>
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-serif font-bold text-sm sm:text-base text-[#01372e]">Repetir mi último pedido</span>
+            <span className="block text-xs text-[#404846]">
+              {lastOrder.count} {lastOrder.count === 1 ? 'producto' : 'productos'} · {new Date(lastOrder.at).toLocaleDateString('es-AR')}
+            </span>
+          </span>
+          <span className="material-symbols-outlined text-[#01372e]">arrow_forward</span>
+        </button>
+      )}
 
       {/* 2. Carrusel de ofertas y destacados (arriba, para que se vea sin scrollear de más) */}
       <FeaturedCarousel products={spotlight} onOpen={onSelectProduct} onAdd={onAddToCart} onSeeAll={onGoToCatalog} />
@@ -254,8 +277,13 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
         <div className="flex flex-col flex-1 min-w-0">
           <h3 className="font-serif text-sm sm:text-base font-bold text-[#01372e]">¿Dudas o pedidos especiales?</h3>
           <p className="text-xs sm:text-sm text-[#404846] mt-0.5 leading-snug">
-            Hablá directo con Karim por WhatsApp y pedile la lista de precios completa.
+            Hablá directo con Karim por WhatsApp, o descargá la lista de precios completa.
           </p>
+          <PriceListButton
+            products={products}
+            categories={categories}
+            className="mt-2 mr-3 inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#01372e] hover:underline disabled:opacity-60"
+          />
           <a
             href={waLink('Hola Karim, quisiera solicitar la lista de precios completa')}
             target="_blank"

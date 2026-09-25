@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Category, CategoryFilter, Product } from '../../types';
 import { waLink } from '../../lib/config';
 import { ProductCard } from '../ProductCard';
+import { PriceListButton } from '../PriceListButton';
 
 interface Props {
   products: Product[];
@@ -97,15 +98,11 @@ export function CatalogView({
           <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl text-[#01372e] font-bold tracking-tight">
             Catálogo de condimentos y almacén
           </h1>
-          <a
-            href={waLink('Hola Karim, quiero pedir la lista de precios completa')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#01372e] text-white text-xs font-semibold hover:bg-[#1f4e44] transition-colors shadow-xs"
-          >
-            <span className="material-symbols-outlined text-[16px]">description</span>
-            <span>Pedir lista de precios</span>
-          </a>
+          <PriceListButton
+            products={products}
+            categories={categories}
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#01372e] text-white text-xs font-semibold hover:bg-[#1f4e44] disabled:opacity-60 transition-colors shadow-xs"
+          />
         </div>
       </section>
 
@@ -205,7 +202,7 @@ export function CatalogView({
           <div className="bg-[#01372e] text-white p-5 rounded-2xl flex flex-col gap-2 border border-[#204e44] shadow-sm">
             <span className="font-mono text-[10px] text-[#bceddf] uppercase font-bold tracking-wider">Lista de precios</span>
             <h4 className="font-serif font-bold text-base">¿Buscás la lista completa?</h4>
-            <p className="text-xs text-[#8ebeb1] leading-relaxed">Pedísela a Karim por WhatsApp y te la manda al toque.</p>
+            <p className="text-xs text-[#8ebeb1] leading-relaxed">Descargala en PDF desde el botón de arriba, o pedísela a Karim por WhatsApp.</p>
             <a
               href={waLink('Hola Karim, quiero pedir la lista de precios completa')}
               target="_blank"

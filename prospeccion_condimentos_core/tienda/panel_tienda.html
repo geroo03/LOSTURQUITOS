@@ -211,6 +211,60 @@
   #producto-modal-actions{display:flex; justify-content:space-between; gap:10px; margin-top:20px}
   #producto-error{color:var(--alta); font-size:12px; min-height:1em; margin-top:10px}
 
+  /* ---------- PRESUPUESTOS ---------- */
+  #presupuestos-view{padding:16px 20px}
+  .pedido-estado.borrador{border-color:var(--muted); color:var(--muted)}
+  .pedido-estado.enviado{border-color:var(--mayorista); color:var(--mayorista)}
+  .pedido-estado.aceptado{border-color:var(--live); color:var(--live)}
+  .pedido-estado.rechazado{border-color:var(--alta); color:var(--alta)}
+  .pres-actions{display:flex; gap:6px; flex-wrap:wrap}
+  .pres-actions button{
+    background:#fff8f0; border:1px solid var(--border); color:var(--text); border-radius:5px;
+    padding:4px 8px; font-size:11.5px; cursor:pointer;
+  }
+  .pres-actions button:hover{border-color:#c0c8c4}
+  .pres-actions .danger{color:var(--alta); border-color:rgba(186,26,26,.35); background:rgba(186,26,26,.08)}
+  .pres-actions .wa{background:#1ebe5d; border-color:#1ebe5d; color:#fff}
+  #pres-overlay{
+    position:fixed; inset:0; background:rgba(33,27,8,.5); z-index:49; opacity:0; pointer-events:none; transition:opacity .15s ease;
+  }
+  #pres-overlay.open{opacity:1; pointer-events:auto}
+  #pres-modal{
+    position:fixed; top:50%; left:50%; width:min(840px,95vw); max-height:92vh; overflow-y:auto;
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; z-index:50;
+    box-shadow:0 24px 60px -20px rgba(33,27,8,.25); opacity:0; pointer-events:none;
+    transform:translate(-50%,-46%); transition:opacity .15s ease, transform .15s ease; padding:22px;
+  }
+  #pres-modal.open{opacity:1; pointer-events:auto; transform:translate(-50%,-50%)}
+  #pres-modal h2{font-size:16px; margin:0 0 4px}
+  #pres-modal label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:12px 0 5px}
+  #pres-modal input[type=text], #pres-modal input[type=number], #pres-modal input[type=date], #pres-modal select, #pres-modal textarea{
+    width:100%; background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    padding:8px 10px; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical;
+  }
+  #pres-banner{background:#fff3d7; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:12px; margin:8px 0; display:none}
+  .pres-picker{position:relative}
+  #pres-results{
+    position:absolute; left:0; right:0; top:100%; z-index:5; background:var(--panel); border:1px solid var(--border);
+    border-radius:6px; box-shadow:0 12px 30px -12px rgba(33,27,8,.3); max-height:240px; overflow-y:auto; display:none;
+  }
+  #pres-results button{
+    display:flex; width:100%; justify-content:space-between; gap:10px; background:none; border:none; text-align:left;
+    padding:8px 10px; font-size:12.5px; cursor:pointer; color:var(--text); border-bottom:1px solid var(--border);
+  }
+  #pres-results button:hover{background:#fff3d7}
+  #pres-results .sub{color:var(--muted); font-size:11.5px}
+  .pres-lines{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:10px}
+  .pres-lines th{text-align:left; color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; padding:6px 6px; border-bottom:1px solid var(--border)}
+  .pres-lines td{padding:6px; border-bottom:1px solid var(--border); vertical-align:middle}
+  .pres-lines input[type=number]{width:96px !important; padding:5px 7px !important}
+  .pres-lines input.qty{width:70px !important}
+  .pres-totales{margin-top:12px; margin-left:auto; width:min(320px,100%); font-size:13px}
+  .pres-totales div{display:flex; justify-content:space-between; padding:3px 0}
+  .pres-totales .total{font-size:17px; font-weight:700; color:var(--mayorista); border-top:1px solid var(--border); margin-top:4px; padding-top:8px}
+  #pres-modal-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:20px; align-items:center}
+  #pres-error{color:var(--alta); font-size:12px; min-height:1em; margin-top:10px}
+
   /* ---------- CONFIGURACIÓN ---------- */
   #config-view{padding:16px 20px; max-width:420px}
   .config-card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:20px}
@@ -260,14 +314,71 @@
   <div id="tabs">
     <button class="tab active" id="tab-pedidos" onclick="showTab('pedidos')">Pedidos</button>
     <button class="tab" id="tab-productos" onclick="showTab('productos')">Productos</button>
+    <button class="tab" id="tab-presupuestos" onclick="showTab('presupuestos')">Presupuestos</button>
     <button class="tab" id="tab-categorias" onclick="showTab('categorias')">Categorías</button>
     <button class="tab" id="tab-config" onclick="showTab('config')">Configuración</button>
   </div>
 
   <div id="pedidos-view"></div>
   <div id="productos-view" style="display:none"></div>
+  <div id="presupuestos-view" style="display:none"></div>
   <div id="categorias-view" style="display:none"></div>
   <div id="config-view" style="display:none"></div>
+</div>
+
+<div id="pres-overlay" onclick="closePresEditor()"></div>
+<div id="pres-modal" role="dialog" aria-modal="true" aria-labelledby="pres-title">
+  <h2 id="pres-title">Nuevo presupuesto</h2>
+  <div id="pres-banner"></div>
+
+  <div class="form-row">
+    <div>
+      <label for="pres-cliente">Cliente</label>
+      <input type="text" id="pres-cliente" placeholder="Ej: Dietética El Rincón" oninput="presEdit.cliente_nombre = this.value">
+    </div>
+    <div>
+      <label for="pres-tel">WhatsApp del cliente (opcional)</label>
+      <input type="text" id="pres-tel" placeholder="Ej: 3856 123456" oninput="presEdit.cliente_telefono = this.value">
+    </div>
+  </div>
+
+  <label for="pres-buscar">Agregar productos</label>
+  <div class="pres-picker">
+    <input type="text" id="pres-buscar" placeholder="Buscar producto por nombre…" autocomplete="off" oninput="renderPresResultados()" onfocus="renderPresResultados()">
+    <div id="pres-results"></div>
+  </div>
+
+  <div id="pres-lines-wrap"></div>
+
+  <div class="form-row">
+    <div>
+      <label for="pres-descuento">Descuento (%)</label>
+      <input type="number" id="pres-descuento" min="0" max="100" step="1" placeholder="0" oninput="presEdit.descuento_pct = Math.min(100, Math.max(0, parseInt(this.value, 10) || 0)); actualizarPresTotales()">
+    </div>
+    <div>
+      <label for="pres-valido">Válido hasta (opcional)</label>
+      <input type="date" id="pres-valido" oninput="presEdit.valido_hasta = this.value || null">
+    </div>
+    <div>
+      <label for="pres-estado">Estado</label>
+      <select id="pres-estado" onchange="presEdit.estado = this.value"></select>
+    </div>
+  </div>
+
+  <label for="pres-nota">Nota para el cliente (opcional)</label>
+  <textarea id="pres-nota" rows="2" placeholder="Ej: Entrega en 48 hs. Precios sujetos a confirmación." oninput="presEdit.nota = this.value"></textarea>
+
+  <div class="pres-totales" id="pres-totales"></div>
+
+  <p id="pres-error"></p>
+  <div id="pres-modal-actions">
+    <button class="btn" onclick="actualizarPreciosPresEditor()" title="Vuelve a tomar el precio actual de cada producto">↻ Actualizar a precios de hoy</button>
+    <div class="spacer"></div>
+    <button class="btn" onclick="closePresEditor()">Cancelar</button>
+    <button class="btn" onclick="presEditorPDF()">PDF</button>
+    <button class="btn" style="background:#1ebe5d;border-color:#1ebe5d;color:#fff" onclick="presEditorWhatsApp()">Guardar y enviar por WhatsApp</button>
+    <button class="btn btn-primary" id="pres-save" onclick="guardarPresupuesto()">Guardar</button>
+  </div>
 </div>
 
 <div id="producto-modal-overlay" onclick="closeProductoModal()"></div>
@@ -308,6 +419,11 @@
   <div id="pf-precio-oferta-wrap" style="display:none">
     <label for="pf-precio-oferta">Precio de oferta (tiene que ser menor al precio normal)</label>
     <input type="number" id="pf-precio-oferta" min="0" step="1" placeholder="0">
+  </div>
+
+  <div class="check-row">
+    <input type="checkbox" id="pf-sin-stock">
+    <label for="pf-sin-stock">Sin stock (se ve en el catálogo pero no se puede pedir)</label>
   </div>
 
   <div class="check-row">
@@ -360,6 +476,10 @@ const ESTADOS_PEDIDO = [
 let pedidos = [];      // filas tal cual vienen de la tabla `pedidos` de Supabase
 let productos = [];    // filas tal cual vienen de la tabla `productos` de Supabase
 let categorias = [];   // filas tal cual vienen de la tabla `categorias` de Supabase, ordenadas por `orden`
+let presupuestos = []; // filas de la tabla `presupuestos`
+let presEdit = null;    // presupuesto en edición dentro del modal (copia de trabajo)
+let filtroPresTexto = '';
+let filtroPresEstado = '';
 let pedidosChannel = null;
 let productosChannel = null;
 let categoriasChannel = null;
@@ -405,7 +525,7 @@ async function showApp(){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   await loadCategorias();
-  await Promise.all([loadPedidos(), loadProductos(), loadConfiguracion()]);
+  await Promise.all([loadPedidos(), loadProductos(), loadConfiguracion(), loadPresupuestos()]);
   subscribeRealtimePedidos();
   subscribeRealtimeProductos();
   subscribeRealtimeCategorias();
@@ -414,10 +534,12 @@ async function showApp(){
 function showTab(tab){
   document.getElementById('tab-pedidos').classList.toggle('active', tab === 'pedidos');
   document.getElementById('tab-productos').classList.toggle('active', tab === 'productos');
+  document.getElementById('tab-presupuestos').classList.toggle('active', tab === 'presupuestos');
   document.getElementById('tab-categorias').classList.toggle('active', tab === 'categorias');
   document.getElementById('tab-config').classList.toggle('active', tab === 'config');
   document.getElementById('pedidos-view').style.display = tab === 'pedidos' ? '' : 'none';
   document.getElementById('productos-view').style.display = tab === 'productos' ? '' : 'none';
+  document.getElementById('presupuestos-view').style.display = tab === 'presupuestos' ? '' : 'none';
   document.getElementById('categorias-view').style.display = tab === 'categorias' ? '' : 'none';
   document.getElementById('config-view').style.display = tab === 'config' ? '' : 'none';
 }
@@ -675,6 +797,7 @@ function productoRowHTML(p){
         ${!p.activo ? '<span class="badge-inactivo">Inactivo</span>' : ''}
         ${p.destacado ? '<span class="badge-destacado">★ Destacado</span>' : ''}
         ${p.precio_oferta != null && p.precio_oferta < p.precio ? '<span class="badge-oferta">% Oferta</span>' : ''}
+        ${p.sin_stock ? '<span class="badge-inactivo">Sin stock</span>' : ''}
       </td>
       <td>${escapeHtml(categoriaLabel(p.categoria_id))}</td>
       <td>${escapeHtml(p.unidad || '')}</td>
@@ -685,6 +808,7 @@ function productoRowHTML(p){
         <div class="producto-row-actions">
           <button onclick="openProductoModal(${p.id})">Editar</button>
           <button onclick="toggleActivoProducto(${p.id}, ${!p.activo})">${p.activo ? 'Dar de baja' : 'Reactivar'}</button>
+          <button onclick="toggleSinStockProducto(${p.id}, ${!p.sin_stock})">${p.sin_stock ? 'Hay stock' : 'Sin stock'}</button>
           <button onclick="toggleDestacadoProducto(${p.id}, ${!p.destacado})">${p.destacado ? 'Quitar destacado' : 'Destacar'}</button>
           <button class="danger" onclick="borrarProducto(${p.id})">Borrar</button>
         </div>
@@ -753,6 +877,15 @@ async function toggleActivoProducto(id, nuevoActivo){
   if (error) console.error('No se pudo actualizar el producto:', error.message);
 }
 
+async function toggleSinStockProducto(id, nuevo){
+  const { error } = await sb.from('productos').update({ sin_stock: nuevo }).eq('id', id);
+  if (error){
+    alert('No se pudo cambiar el stock: ' + error.message + '\n\nSi dice que la columna no existe, corré supabase_add_producto_sin_stock.sql en Supabase.');
+    return;
+  }
+  await loadProductos();
+}
+
 async function toggleDestacadoProducto(id, nuevoDestacado){
   const idx = productos.findIndex(p => p.id === id);
   if (idx >= 0) productos[idx] = { ...productos[idx], destacado: nuevoDestacado };
@@ -787,6 +920,7 @@ function openProductoModal(id){
   document.getElementById('pf-precio').value = p ? p.precio : '';
   document.getElementById('pf-activo').checked = p ? !!p.activo : true;
   document.getElementById('pf-destacado').checked = p ? !!p.destacado : false;
+  document.getElementById('pf-sin-stock').checked = p ? !!p.sin_stock : false;
   const enOferta = !!(p && p.precio_oferta != null && p.precio_oferta < p.precio);
   document.getElementById('pf-oferta').checked = enOferta;
   document.getElementById('pf-precio-oferta').value = enOferta ? p.precio_oferta : '';
@@ -876,6 +1010,7 @@ async function guardarProducto(){
   const precio = parseInt(document.getElementById('pf-precio').value, 10);
   const activo = document.getElementById('pf-activo').checked;
   const destacado = document.getElementById('pf-destacado').checked;
+  const sinStock = document.getElementById('pf-sin-stock').checked;
   const enOferta = document.getElementById('pf-oferta').checked;
   const precioOferta = parseInt(document.getElementById('pf-precio-oferta').value, 10);
   const descripcion = document.getElementById('pf-descripcion').value.trim();
@@ -901,6 +1036,8 @@ async function guardarProducto(){
   // Solo se manda precio_oferta si hace falta, así guardar productos sigue andando aunque todavía no se haya
   // corrido supabase_add_producto_oferta.sql (la columna no existiría).
   const existente = productoEditId ? productos.find(x => x.id === productoEditId) : null;
+  if (sinStock) payload.sin_stock = true;
+  else if (existente && 'sin_stock' in existente) payload.sin_stock = false;
   if (enOferta) payload.precio_oferta = precioOferta;
   else if (existente && 'precio_oferta' in existente) payload.precio_oferta = null;
 
@@ -1214,7 +1351,423 @@ async function restablecerTagline(){
   renderConfiguracion();
 }
 
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeProductoModal(); });
+// ---------- Presupuestos ----------
+// Karim arma presupuestos para sus clientes (tabla `presupuestos`), los guarda como historial y puede repetirlos.
+// Cada línea guarda su propio precio: cambiar precios en Productos no altera presupuestos ya hechos.
+
+const ESTADOS_PRES = [
+  { id: 'borrador',  label: 'Borrador' },
+  { id: 'enviado',   label: 'Enviado' },
+  { id: 'aceptado',  label: 'Aceptado' },
+  { id: 'rechazado', label: 'Rechazado' },
+];
+
+function precioActualProducto(p){
+  return (p.precio_oferta != null && p.precio_oferta < p.precio) ? p.precio_oferta : p.precio;
+}
+
+function calcTotalesPres(p){
+  const subtotal = (p.items || []).reduce((n, it) => n + it.precio * it.cantidad, 0);
+  const descuento = Math.round(subtotal * (p.descuento_pct || 0) / 100);
+  return { subtotal, descuento, total: subtotal - descuento };
+}
+
+async function loadPresupuestos(){
+  const { data, error } = await sb.from('presupuestos').select('*').order('creado_en', { ascending: false });
+  if (error){
+    const falta = /presupuestos/i.test(error.message) && /(does not exist|schema cache|relation)/i.test(error.message);
+    document.getElementById('presupuestos-view').innerHTML = `<p style="padding:20px;color:var(--muted)">${
+      falta
+        ? 'Todavía falta crear la tabla de presupuestos: corré <code>supabase_setup_presupuestos.sql</code> en el SQL Editor de Supabase y recargá esta página.'
+        : 'Error cargando presupuestos: ' + escapeHtml(error.message)
+    }</p>`;
+    return;
+  }
+  presupuestos = data || [];
+  renderPresupuestos();
+}
+
+function renderPresupuestos(){
+  const view = document.getElementById('presupuestos-view');
+  view.innerHTML = `
+    <div id="productos-toolbar">
+      <input type="text" id="pres-search" placeholder="Buscar por cliente o número...">
+      <select id="pres-filter-estado">
+        <option value="">Todos los estados</option>
+        ${ESTADOS_PRES.map(e => `<option value="${e.id}">${e.label}</option>`).join('')}
+      </select>
+      <span id="productos-count"></span>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="openPresEditor(null)">+ Nuevo presupuesto</button>
+    </div>
+    <div id="pres-results-list"></div>`;
+  const s = document.getElementById('pres-search'), f = document.getElementById('pres-filter-estado');
+  s.value = filtroPresTexto; f.value = filtroPresEstado;
+  s.addEventListener('input', (e) => { filtroPresTexto = e.target.value; renderPresupuestosLista(); });
+  f.addEventListener('change', (e) => { filtroPresEstado = e.target.value; renderPresupuestosLista(); });
+  renderPresupuestosLista();
+}
+
+function renderPresupuestosLista(){
+  const q = filtroPresTexto.trim().toLowerCase();
+  const list = presupuestos.filter(p => {
+    if (filtroPresEstado && p.estado !== filtroPresEstado) return false;
+    if (q && !(`${p.id} ${p.cliente_nombre || ''}`.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  document.getElementById('productos-count').textContent = `${list.length} de ${presupuestos.length}`;
+  const box = document.getElementById('pres-results-list');
+  if (!presupuestos.length){
+    box.innerHTML = `<p style="padding:20px;color:var(--muted)">Todavía no hay presupuestos. Usá "+ Nuevo presupuesto" para armar el primero.</p>`;
+    return;
+  }
+  if (!list.length){
+    box.innerHTML = `<p style="padding:20px;color:var(--muted)">No hay presupuestos que coincidan con el filtro.</p>`;
+    return;
+  }
+  box.innerHTML = `
+    <table class="productos-table">
+      <thead><tr><th>N°</th><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th><th></th></tr></thead>
+      <tbody>${list.map(p => `
+        <tr>
+          <td>#${p.id}</td>
+          <td>${new Date(p.creado_en).toLocaleDateString('es-AR')}</td>
+          <td><span class="producto-nombre">${escapeHtml(p.cliente_nombre || 'Sin nombre')}</span>${p.cliente_telefono ? `<div style="color:var(--muted);font-size:11.5px">${escapeHtml(p.cliente_telefono)}</div>` : ''}</td>
+          <td>${(p.items || []).length}</td>
+          <td><strong>${money(p.total)}</strong>${p.descuento_pct ? `<div style="color:var(--muted);font-size:11px">-${p.descuento_pct}% incluido</div>` : ''}</td>
+          <td>
+            <select class="pedido-estado ${p.estado}" onchange="updateEstadoPresupuesto(${p.id}, this.value)">
+              ${ESTADOS_PRES.map(e => `<option value="${e.id}" ${e.id === p.estado ? 'selected' : ''}>${e.label}</option>`).join('')}
+            </select>
+          </td>
+          <td>
+            <div class="pres-actions">
+              <button onclick="openPresEditor(${p.id})">Ver / editar</button>
+              <button onclick="repetirPresupuesto(${p.id})">Repetir</button>
+              <button onclick="generarPresupuestoPDF(presupuestos.find(x => x.id === ${p.id}))">PDF</button>
+              <button class="wa" onclick="enviarPresupuestoWhatsApp(${p.id})">WhatsApp</button>
+              <button class="danger" onclick="borrarPresupuesto(${p.id})">Borrar</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function updateEstadoPresupuesto(id, estado){
+  const idx = presupuestos.findIndex(p => p.id === id);
+  if (idx >= 0) presupuestos[idx] = { ...presupuestos[idx], estado };
+  renderPresupuestosLista();
+  const { error } = await sb.from('presupuestos').update({ estado, actualizado_en: new Date().toISOString() }).eq('id', id);
+  if (error) console.error('No se pudo actualizar el estado del presupuesto:', error.message);
+}
+
+async function borrarPresupuesto(id){
+  if (!confirm(`¿Borrar el presupuesto #${id}? No se puede deshacer.`)) return;
+  const { error } = await sb.from('presupuestos').delete().eq('id', id);
+  if (error){ alert('No se pudo borrar: ' + error.message); return; }
+  presupuestos = presupuestos.filter(p => p.id !== id);
+  renderPresupuestosLista();
+}
+
+// ----- Editor -----
+
+function nuevoPresBase(){
+  return { id: null, cliente_nombre: '', cliente_telefono: '', nota: '', items: [], descuento_pct: 0, estado: 'borrador', valido_hasta: null, creado_en: null };
+}
+
+function openPresEditor(id, base, banner){
+  const p = id ? presupuestos.find(x => x.id === id) : null;
+  presEdit = base ? base : p ? JSON.parse(JSON.stringify(p)) : nuevoPresBase();
+  presEdit.items = Array.isArray(presEdit.items) ? presEdit.items : [];
+
+  document.getElementById('pres-title').textContent = presEdit.id ? `Presupuesto #${presEdit.id}` : 'Nuevo presupuesto';
+  document.getElementById('pres-cliente').value = presEdit.cliente_nombre || '';
+  document.getElementById('pres-tel').value = presEdit.cliente_telefono || '';
+  document.getElementById('pres-nota').value = presEdit.nota || '';
+  document.getElementById('pres-descuento').value = presEdit.descuento_pct || '';
+  document.getElementById('pres-valido').value = presEdit.valido_hasta || '';
+  document.getElementById('pres-estado').innerHTML = ESTADOS_PRES.map(e => `<option value="${e.id}">${e.label}</option>`).join('');
+  document.getElementById('pres-estado').value = presEdit.estado || 'borrador';
+  document.getElementById('pres-buscar').value = '';
+  document.getElementById('pres-results').style.display = 'none';
+  document.getElementById('pres-error').textContent = '';
+  const b = document.getElementById('pres-banner');
+  b.style.display = banner ? 'block' : 'none';
+  b.textContent = banner || '';
+
+  renderPresLineas();
+  document.getElementById('pres-overlay').classList.add('open');
+  document.getElementById('pres-modal').classList.add('open');
+}
+
+function closePresEditor(){
+  document.getElementById('pres-overlay').classList.remove('open');
+  document.getElementById('pres-modal').classList.remove('open');
+}
+
+// Repetir = abrir un presupuesto NUEVO con los mismos datos y productos (se guarda como otro, el original no se toca).
+function repetirPresupuesto(id){
+  const p = presupuestos.find(x => x.id === id);
+  if (!p) return;
+  const copia = JSON.parse(JSON.stringify(p));
+  copia.id = null; copia.estado = 'borrador'; copia.valido_hasta = null; copia.creado_en = null;
+  openPresEditor(null, copia, `Copia del presupuesto #${id}: se mantienen los precios de ese día. Usá "Actualizar a precios de hoy" si querés tomar los precios actuales.`);
+}
+
+function renderPresResultados(){
+  const q = document.getElementById('pres-buscar').value.trim().toLowerCase();
+  const box = document.getElementById('pres-results');
+  if (!q){ box.style.display = 'none'; return; }
+  const found = productos.filter(p => p.activo && p.nombre.toLowerCase().includes(q)).slice(0, 12);
+  box.innerHTML = found.length
+    ? found.map(p => `
+        <button onclick="agregarLineaPres(${p.id})">
+          <span>${escapeHtml(p.nombre)} <span class="sub">· ${escapeHtml(p.unidad || '')}${p.sin_stock ? ' · sin stock' : ''}</span></span>
+          <strong>${money(precioActualProducto(p))}</strong>
+        </button>`).join('')
+    : `<div style="padding:10px;color:var(--muted);font-size:12.5px">No hay productos con ese nombre.</div>`;
+  box.style.display = 'block';
+}
+
+function agregarLineaPres(productoId){
+  const p = productos.find(x => x.id === productoId);
+  if (!p) return;
+  const existente = presEdit.items.find(it => it.producto_id === p.id);
+  if (existente) existente.cantidad += 1;
+  else presEdit.items.push({ producto_id: p.id, nombre: p.nombre, unidad: p.unidad || '', precio: precioActualProducto(p), cantidad: 1 });
+  document.getElementById('pres-buscar').value = '';
+  document.getElementById('pres-results').style.display = 'none';
+  renderPresLineas();
+}
+
+function renderPresLineas(){
+  const wrap = document.getElementById('pres-lines-wrap');
+  if (!presEdit.items.length){
+    wrap.innerHTML = `<p style="color:var(--muted);font-size:12.5px;margin:12px 0">Todavía no agregaste productos. Buscá arriba y tocá uno para sumarlo.</p>`;
+  } else {
+    wrap.innerHTML = `
+      <table class="pres-lines">
+        <thead><tr><th>Producto</th><th>Unidad</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th></th></tr></thead>
+        <tbody>${presEdit.items.map((it, i) => `
+          <tr>
+            <td>${escapeHtml(it.nombre)}</td>
+            <td>${escapeHtml(it.unidad)}</td>
+            <td><input type="number" min="0" step="1" value="${it.precio}" oninput="presLineaCambio(${i}, 'precio', this.value)"></td>
+            <td><input class="qty" type="number" min="1" step="1" value="${it.cantidad}" oninput="presLineaCambio(${i}, 'cantidad', this.value)"></td>
+            <td id="pres-sub-${i}"><strong>${money(it.precio * it.cantidad)}</strong></td>
+            <td><button class="btn" style="padding:3px 8px" onclick="quitarLineaPres(${i})" aria-label="Quitar">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+  actualizarPresTotales();
+}
+
+function presLineaCambio(i, campo, valor){
+  const n = parseInt(valor, 10);
+  presEdit.items[i][campo] = Number.isFinite(n) && n >= 0 ? n : 0;
+  const cell = document.getElementById('pres-sub-' + i);
+  if (cell) cell.innerHTML = `<strong>${money(presEdit.items[i].precio * presEdit.items[i].cantidad)}</strong>`;
+  actualizarPresTotales();
+}
+
+function quitarLineaPres(i){
+  presEdit.items.splice(i, 1);
+  renderPresLineas();
+}
+
+function actualizarPresTotales(){
+  const t = calcTotalesPres(presEdit);
+  document.getElementById('pres-totales').innerHTML = `
+    <div><span>Subtotal</span><span>${money(t.subtotal)}</span></div>
+    ${presEdit.descuento_pct ? `<div><span>Descuento (${presEdit.descuento_pct}%)</span><span>-${money(t.descuento)}</span></div>` : ''}
+    <div class="total"><span>Total</span><span>${money(t.total)}</span></div>`;
+}
+
+function actualizarPreciosPresEditor(){
+  let cambiados = 0, faltantes = 0;
+  presEdit.items.forEach(it => {
+    const p = productos.find(x => x.id === it.producto_id)
+      || productos.find(x => x.nombre === it.nombre && (x.unidad || '') === it.unidad);
+    if (!p){ faltantes++; return; }
+    const nuevo = precioActualProducto(p);
+    if (nuevo !== it.precio){ it.precio = nuevo; cambiados++; }
+    it.producto_id = p.id;
+  });
+  renderPresLineas();
+  const b = document.getElementById('pres-banner');
+  b.style.display = 'block';
+  b.textContent = cambiados || faltantes
+    ? `Precios actualizados: ${cambiados} cambiaron${faltantes ? `, ${faltantes} producto(s) ya no existen y quedaron con su precio anterior` : ''}.`
+    : 'Los precios ya estaban al día.';
+}
+
+async function guardarPresupuesto(opts){
+  const p = presEdit;
+  const errorEl = document.getElementById('pres-error');
+  if (!p.items.length){ errorEl.textContent = 'Agregá al menos un producto.'; return false; }
+  if (p.items.some(it => !(it.cantidad > 0))){ errorEl.textContent = 'Todas las cantidades tienen que ser 1 o más.'; return false; }
+  errorEl.textContent = '';
+
+  const payload = {
+    cliente_nombre: (p.cliente_nombre || '').trim() || null,
+    cliente_telefono: (p.cliente_telefono || '').trim() || null,
+    nota: (p.nota || '').trim() || null,
+    items: p.items,
+    descuento_pct: p.descuento_pct || 0,
+    total: calcTotalesPres(p).total,
+    estado: p.estado || 'borrador',
+    valido_hasta: p.valido_hasta || null,
+    actualizado_en: new Date().toISOString(),
+  };
+
+  const btn = document.getElementById('pres-save');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const q = p.id ? sb.from('presupuestos').update(payload).eq('id', p.id).select().single()
+                 : sb.from('presupuestos').insert(payload).select().single();
+  const { data, error } = await q;
+  btn.disabled = false; btn.textContent = 'Guardar';
+  if (error){ errorEl.textContent = 'No se pudo guardar: ' + error.message; return false; }
+
+  const idx = presupuestos.findIndex(x => x.id === data.id);
+  if (idx >= 0) presupuestos[idx] = data; else presupuestos.unshift(data);
+  presEdit = JSON.parse(JSON.stringify(data));
+  renderPresupuestosLista();
+  if (!(opts && opts.keepOpen)) closePresEditor();
+  return true;
+}
+
+// ----- PDF y WhatsApp -----
+
+async function generarPresupuestoPDF(p){
+  if (!p) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const ROJO = [92, 0, 1], NEGRO = [0, 0, 0];
+  const items = Array.isArray(p.items) ? p.items : [];
+  const t = calcTotalesPres(p);
+
+  let tituloX = 14;
+  if (logoUrl){
+    try {
+      doc.addImage(await cargarImagenComoDataURL(logoUrl), 'JPEG', 14, 10, 22, 22);
+      tituloX = 40;
+    } catch (e){ console.error('No se pudo incrustar el logo en el PDF:', e); }
+  }
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(24);
+  doc.setTextColor(31, 78, 68);
+  doc.text('Los Turquitos', tituloX, 24);
+  doc.setTextColor(...NEGRO);
+  doc.setFontSize(11);
+  doc.text(p.id ? `Presupuesto #${p.id}` : 'Presupuesto', 14, 40);
+  doc.text(`Fecha: ${new Date(p.creado_en || Date.now()).toLocaleDateString('es-AR')}`, 14, 46);
+  let y = 52;
+  if (p.valido_hasta){
+    const [yy, mm, dd] = String(p.valido_hasta).split('-');
+    doc.text(`Válido hasta: ${dd}/${mm}/${yy}`, 14, y); y += 6;
+  }
+  if (p.cliente_nombre){ doc.text(`Cliente: ${p.cliente_nombre}`, 14, y); y += 6; }
+  y += 4;
+
+  doc.setTextColor(...ROJO);
+  doc.setFontSize(13);
+  doc.text('Detalle', 14, y);
+  y += 8;
+  doc.setFontSize(9.5);
+  doc.text('PRODUCTO', 14, y); doc.text('CANT.', 120, y, { align: 'right' });
+  doc.text('PRECIO', 155, y, { align: 'right' }); doc.text('SUBTOTAL', 196, y, { align: 'right' });
+  doc.setDrawColor(...ROJO); doc.setLineWidth(0.3); doc.line(14, y + 2, 196, y + 2);
+  y += 8;
+
+  doc.setFontSize(11);
+  items.forEach(it => {
+    const lineas = doc.splitTextToSize(`${it.nombre} (${it.unidad})`, 92);
+    if (y + lineas.length * 5 > 270){ doc.addPage(); y = 20; }
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...NEGRO);
+    doc.text(lineas, 14, y);
+    doc.text(String(it.cantidad), 120, y, { align: 'right' });
+    doc.text(money(it.precio), 155, y, { align: 'right' });
+    doc.setTextColor(...ROJO);
+    doc.text(money(it.precio * it.cantidad), 196, y, { align: 'right' });
+    y += Math.max(1, lineas.length) * 5 + 2;
+  });
+
+  y += 2;
+  doc.setDrawColor(...ROJO); doc.setLineWidth(0.5); doc.line(14, y, 196, y);
+  y += 9;
+  doc.setTextColor(...NEGRO); doc.setFontSize(11);
+  if (p.descuento_pct){
+    doc.text(`Subtotal: ${money(t.subtotal)}`, 196, y, { align: 'right' }); y += 6;
+    doc.text(`Descuento (${p.descuento_pct}%): -${money(t.descuento)}`, 196, y, { align: 'right' }); y += 8;
+  }
+  doc.setFontSize(15); doc.setTextColor(...ROJO);
+  doc.text(`Total: ${money(t.total)}`, 196, y, { align: 'right' });
+  y += 12;
+  doc.setTextColor(...NEGRO); doc.setFontSize(10);
+  if (p.nota){
+    const nl = doc.splitTextToSize(`Nota: ${p.nota}`, 182);
+    doc.text(nl, 14, y); y += nl.length * 5 + 4;
+  }
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(112, 121, 118);
+  doc.text('Precios sujetos a confirmación de stock. Los Turquitos — Pedidos por WhatsApp +54 9 3856 14-9181.', 14, 285);
+
+  doc.save(`presupuesto-${p.id || 'nuevo'}-${(p.cliente_nombre || 'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase()}.pdf`);
+}
+
+function presEditorPDF(){ generarPresupuestoPDF({ ...presEdit, total: calcTotalesPres(presEdit).total }); }
+
+// Número argentino para wa.me: solo dígitos, con prefijo 549 si no lo trae.
+function waPhone(raw){
+  let d = String(raw || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('54')) return d;
+  d = d.replace(/^0+/, '');
+  return '549' + d;
+}
+
+function textoPresupuestoWhatsApp(p){
+  const t = calcTotalesPres(p);
+  let msg = `Hola${p.cliente_nombre ? ' ' + p.cliente_nombre : ''}, te paso el presupuesto de Los Turquitos${p.id ? ' #' + p.id : ''}:\n\n`;
+  (p.items || []).forEach(it => { msg += `• ${it.nombre} — ${it.cantidad} × ${it.unidad} = ${money(it.precio * it.cantidad)}\n`; });
+  if (p.descuento_pct) msg += `\nSubtotal: ${money(t.subtotal)}\nDescuento (${p.descuento_pct}%): -${money(t.descuento)}`;
+  msg += `\n*Total: ${money(t.total)}*`;
+  if (p.valido_hasta){ const [y, m, d] = String(p.valido_hasta).split('-'); msg += `\nVálido hasta el ${d}/${m}/${y}.`; }
+  if (p.nota) msg += `\n\n${p.nota}`;
+  msg += '\n\nCualquier duda avisame. ¡Gracias!';
+  return msg;
+}
+
+// La ventana se abre YA (dentro del clic) y recién después se le pone la URL: Safari bloquea los popups abiertos tras un await.
+function abrirWhatsApp(win, p){
+  const tel = waPhone(p.cliente_telefono);
+  const url = `https://wa.me/${tel}?text=${encodeURIComponent(textoPresupuestoWhatsApp(p))}`;
+  if (win) win.location.href = url; else window.open(url, '_blank');
+}
+
+async function enviarPresupuestoWhatsApp(id){
+  const p = presupuestos.find(x => x.id === id);
+  if (!p) return;
+  const win = window.open('', '_blank');
+  abrirWhatsApp(win, p);
+  if (p.estado === 'borrador') updateEstadoPresupuesto(id, 'enviado');
+}
+
+async function presEditorWhatsApp(){
+  const win = window.open('', '_blank');
+  const ok = await guardarPresupuesto({ keepOpen: true });
+  if (!ok){ if (win) win.close(); return; }
+  abrirWhatsApp(win, presEdit);
+  if (presEdit.estado === 'borrador'){
+    await updateEstadoPresupuesto(presEdit.id, 'enviado');
+    presEdit.estado = 'enviado';
+    document.getElementById('pres-estado').value = 'enviado';
+  }
+  document.getElementById('pres-title').textContent = `Presupuesto #${presEdit.id}`;
+}
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape'){ closeProductoModal(); closePresEditor(); } });
 
 // ---------- Init ----------
 
