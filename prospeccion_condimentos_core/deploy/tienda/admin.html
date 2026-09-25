@@ -6,6 +6,7 @@
 <title>Los Turquitos — Panel de Administración</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -237,6 +238,18 @@
   .chips-info{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
   .chips-info span{background:var(--panel2); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:12px}
 
+  #imp-overlay{position:fixed; inset:0; background:rgba(33,27,8,.5); z-index:59; opacity:0; pointer-events:none; transition:opacity .15s ease}
+  #imp-overlay.open{opacity:1; pointer-events:auto}
+  #imp-modal{
+    position:fixed; top:50%; left:50%; width:min(760px,95vw); max-height:90vh; overflow-y:auto; background:var(--panel);
+    border:1px solid var(--border); border-radius:10px; z-index:60; box-shadow:0 24px 60px -20px rgba(33,27,8,.25);
+    opacity:0; pointer-events:none; transform:translate(-50%,-46%); transition:opacity .15s ease, transform .15s ease; padding:22px;
+  }
+  #imp-modal.open{opacity:1; pointer-events:auto; transform:translate(-50%,-50%)}
+  #imp-modal h2{font-size:16px; margin:0 0 4px}
+  .badge-cuenta{background:rgba(31,78,68,.12); color:var(--mayorista); border-radius:5px; padding:1px 6px; font-size:10px; font-weight:600; margin-left:6px}
+  #clientes-view{padding:16px 20px}
+
   /* ---------- PRESUPUESTOS ---------- */
   #presupuestos-view{padding:16px 20px}
   .pedido-estado.borrador{border-color:var(--muted); color:var(--muted)}
@@ -342,6 +355,7 @@
     <button class="tab" id="tab-pedidos" onclick="showTab('pedidos')">Pedidos</button>
     <button class="tab" id="tab-productos" onclick="showTab('productos')">Productos</button>
     <button class="tab" id="tab-presupuestos" onclick="showTab('presupuestos')">Presupuestos</button>
+    <button class="tab" id="tab-clientes" onclick="showTab('clientes')">Clientes</button>
     <button class="tab" id="tab-categorias" onclick="showTab('categorias')">Categorías</button>
     <button class="tab" id="tab-config" onclick="showTab('config')">Configuración</button>
   </div>
@@ -350,8 +364,22 @@
   <div id="pedidos-view" style="display:none"></div>
   <div id="productos-view" style="display:none"></div>
   <div id="presupuestos-view" style="display:none"></div>
+  <div id="clientes-view" style="display:none"></div>
   <div id="categorias-view" style="display:none"></div>
   <div id="config-view" style="display:none"></div>
+</div>
+
+<input type="file" id="imp-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarPlanilla(this.files[0])">
+<div id="imp-overlay" onclick="cerrarImport()"></div>
+<div id="imp-modal" role="dialog" aria-modal="true" aria-labelledby="imp-title">
+  <h2 id="imp-title">Importar precios</h2>
+  <p style="font-size:12px;color:var(--muted);margin:0 0 12px">Revisá los cambios antes de aplicarlos. Todavía no se modificó nada.</p>
+  <div id="imp-body"></div>
+  <p id="imp-status" style="font-size:12.5px;min-height:1em;margin-top:12px"></p>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+    <button class="btn" onclick="cerrarImport()">Cancelar</button>
+    <button class="btn btn-primary" id="imp-apply" onclick="aplicarImport()">Aplicar cambios</button>
+  </div>
 </div>
 
 <div id="pres-overlay" onclick="closePresEditor()"></div>
@@ -532,17 +560,36 @@ function escapeHtml(s){
 
 // ---------- Auth ----------
 
+// ---------- Acceso solo para administradores ----------
+// Con cuentas de cliente, "usuario logueado" ya no alcanza: solo entran los que están en la tabla `admins`.
+// Si esa tabla todavía no existe (no se corrió supabase_cuentas_y_seguridad.sql) se mantiene el comportamiento anterior.
+async function esAdmin(){
+  const { data: s } = await sb.auth.getSession();
+  const uid = s.session && s.session.user ? s.session.user.id : null;
+  if (!uid) return false;
+  const { data, error } = await sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle();
+  if (error) return /admins/i.test(error.message) && /(does not exist|schema cache|relation)/i.test(error.message);
+  return !!data;
+}
+
+async function entrarSiEsAdmin(){
+  if (await esAdmin()){ showApp(); return; }
+  await sb.auth.signOut();
+  showLogin('Esta cuenta no tiene acceso al panel de administración.');
+}
+
 async function checkSession(){
   const { data } = await sb.auth.getSession();
   if (data.session){
-    showApp();
+    entrarSiEsAdmin();
   } else {
     showLogin();
   }
 }
 
-function showLogin(){
+function showLogin(msg){
   document.getElementById('login-screen').style.display = 'flex';
+  if (msg) document.getElementById('login-error').textContent = msg;
   document.getElementById('app').style.display = 'none';
   if (pedidosChannel){ sb.removeChannel(pedidosChannel); pedidosChannel = null; }
   if (productosChannel){ sb.removeChannel(productosChannel); productosChannel = null; }
@@ -553,7 +600,7 @@ async function showApp(){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   await loadCategorias();
-  await Promise.all([loadPedidos(), loadProductos(), loadConfiguracion(), loadPresupuestos()]);
+  await Promise.all([loadPedidos(), loadProductos(), loadConfiguracion(), loadPresupuestos(), loadClientes()]);
   subscribeRealtimePedidos();
   subscribeRealtimeProductos();
   subscribeRealtimeCategorias();
@@ -564,12 +611,14 @@ function showTab(tab){
   document.getElementById('tab-pedidos').classList.toggle('active', tab === 'pedidos');
   document.getElementById('tab-productos').classList.toggle('active', tab === 'productos');
   document.getElementById('tab-presupuestos').classList.toggle('active', tab === 'presupuestos');
+  document.getElementById('tab-clientes').classList.toggle('active', tab === 'clientes');
   document.getElementById('tab-categorias').classList.toggle('active', tab === 'categorias');
   document.getElementById('tab-config').classList.toggle('active', tab === 'config');
   document.getElementById('resumen-view').style.display = tab === 'resumen' ? '' : 'none';
   document.getElementById('pedidos-view').style.display = tab === 'pedidos' ? '' : 'none';
   document.getElementById('productos-view').style.display = tab === 'productos' ? '' : 'none';
   document.getElementById('presupuestos-view').style.display = tab === 'presupuestos' ? '' : 'none';
+  document.getElementById('clientes-view').style.display = tab === 'clientes' ? '' : 'none';
   document.getElementById('categorias-view').style.display = tab === 'categorias' ? '' : 'none';
   document.getElementById('config-view').style.display = tab === 'config' ? '' : 'none';
 }
@@ -593,7 +642,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     errorEl.textContent = 'Email o contraseña incorrectos.';
     return;
   }
-  showApp();
+  await entrarSiEsAdmin();
 });
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -639,7 +688,7 @@ function pedidoHTML(p){
     <div class="pedido-card">
       <div class="pedido-head">
         <div>
-          <div class="pedido-cliente">${escapeHtml(p.cliente_nombre || 'Sin nombre')}</div>
+          <div class="pedido-cliente">${escapeHtml(p.cliente_nombre || 'Sin nombre')}${p.user_id ? '<span class="badge-cuenta">Con cuenta</span>' : ''}${p.presupuesto_id ? `<span class="badge-cuenta">Desde presupuesto #${p.presupuesto_id}</span>` : ''}</div>
           <div class="pedido-fecha">${fecha} · Pedido #${p.id}</div>
         </div>
         <div class="pedido-total">${money(p.total)}</div>
@@ -654,6 +703,7 @@ function pedidoHTML(p){
           ${ESTADOS_PEDIDO.map(e => `<option value="${e.id}" ${e.id === estado ? 'selected' : ''}>${e.label}</option>`).join('')}
         </select>
         <button class="btn" onclick="generarPDF(${p.id})">Descargar PDF</button>
+        <button class="btn" onclick="presupuestoDesdePedido(${p.id})">Armar presupuesto</button>
       </div>
     </div>`;
 }
@@ -665,6 +715,7 @@ function setFiltroEstadoPedido(estado){
 
 function renderPedidos(){
   renderResumen();
+  if (typeof renderClientes === 'function' && document.getElementById('clientes-list')) renderClientesLista();
   const view = document.getElementById('pedidos-view');
   if (!pedidos.length){
     view.innerHTML = `<p style="padding:20px;color:var(--muted)">Todavía no se hizo ningún pedido desde el catálogo.</p>`;
@@ -866,6 +917,8 @@ function renderProductos(){
       </select>
       <span id="productos-count"></span>
       <div class="spacer"></div>
+      <button class="btn" onclick="descargarPlanilla()" title="Baja todos los productos en Excel para editar precios">⬇ Descargar planilla</button>
+      <button class="btn" onclick="document.getElementById('imp-file').click()" title="Sube la planilla con los precios nuevos">⬆ Importar precios</button>
       <button class="btn btn-primary" onclick="openProductoModal(null)">+ Nuevo producto</button>
     </div>
     <div id="productos-results"></div>`;
@@ -1473,6 +1526,278 @@ function renderResumen(){
     </div>`;
 }
 
+// ---------- Clientes (cuentas registradas en el catálogo) ----------
+let clientes = [];
+let filtroClienteTexto = '';
+
+async function loadClientes(){
+  const { data, error } = await sb.from('clientes').select('*').order('creado_en', { ascending: false });
+  if (error){
+    const falta = /clientes/i.test(error.message) && /(does not exist|schema cache|relation)/i.test(error.message);
+    document.getElementById('clientes-view').innerHTML = `<p style="padding:20px;color:var(--muted)">${
+      falta
+        ? 'Todavía falta activar las cuentas de cliente: corré <code>supabase_cuentas_y_seguridad.sql</code> en el SQL Editor de Supabase y recargá.'
+        : 'Error cargando clientes: ' + escapeHtml(error.message)}</p>`;
+    return;
+  }
+  clientes = data || [];
+  renderClientes();
+}
+
+function renderClientes(){
+  document.getElementById('clientes-view').innerHTML = `
+    <div id="productos-toolbar">
+      <input type="text" id="clientes-search" placeholder="Buscar por nombre, comercio o email...">
+      <span id="clientes-count"></span>
+    </div>
+    <div id="clientes-list"></div>`;
+  const s = document.getElementById('clientes-search');
+  s.value = filtroClienteTexto;
+  s.addEventListener('input', (e) => { filtroClienteTexto = e.target.value; renderClientesLista(); });
+  renderClientesLista();
+}
+
+function renderClientesLista(){
+  const q = filtroClienteTexto.trim().toLowerCase();
+  const stats = {};
+  pedidos.filter(p => p.user_id && p.estado !== 'cancelado').forEach(p => {
+    const s = stats[p.user_id] = stats[p.user_id] || { n: 0, total: 0, ultimo: null };
+    s.n++; s.total += p.total || 0;
+    if (!s.ultimo || new Date(p.creado_en) > new Date(s.ultimo)) s.ultimo = p.creado_en;
+  });
+  const list = clientes.filter(c => !q || `${c.nombre || ''} ${c.comercio || ''} ${c.email || ''}`.toLowerCase().includes(q));
+  document.getElementById('clientes-count').textContent = `${list.length} de ${clientes.length}`;
+  const box = document.getElementById('clientes-list');
+  if (!clientes.length){
+    box.innerHTML = `<p style="padding:20px;color:var(--muted)">Todavía no se registró ningún cliente. Cuando alguien cree su cuenta en el catálogo, va a aparecer acá con lo que compra.</p>`;
+    return;
+  }
+  box.innerHTML = list.length ? `
+    <table class="productos-table">
+      <thead><tr><th>Cliente</th><th>Contacto</th><th>Alta</th><th>Pedidos</th><th>Total comprado</th><th>Último pedido</th></tr></thead>
+      <tbody>${list.map(c => {
+        const s = stats[c.user_id] || { n: 0, total: 0, ultimo: null };
+        const wa = waPhone(c.telefono);
+        return `<tr>
+          <td><span class="producto-nombre">${escapeHtml(c.comercio || c.nombre || 'Sin nombre')}</span>${c.comercio && c.nombre ? `<div style="color:var(--muted);font-size:11.5px">${escapeHtml(c.nombre)}</div>` : ''}${c.direccion ? `<div style="color:var(--muted);font-size:11.5px">${escapeHtml(c.direccion)}</div>` : ''}</td>
+          <td>${escapeHtml(c.email || '')}${c.telefono ? `<div>${wa ? `<a href="https://wa.me/${wa}" target="_blank" rel="noopener" style="color:#1a9c4d">${escapeHtml(c.telefono)}</a>` : escapeHtml(c.telefono)}</div>` : ''}</td>
+          <td>${new Date(c.creado_en).toLocaleDateString('es-AR')}</td>
+          <td>${s.n}</td>
+          <td><strong>${money(s.total)}</strong></td>
+          <td>${s.ultimo ? new Date(s.ultimo).toLocaleDateString('es-AR') : '—'}</td>
+        </tr>`; }).join('')}
+      </tbody>
+    </table>` : `<p style="padding:20px;color:var(--muted)">No hay clientes que coincidan.</p>`;
+}
+
+// ---------- Pedido ⇄ Presupuesto ----------
+
+// Pedido → presupuesto: abre el editor con los productos del pedido (con los precios a los que se pidieron).
+function presupuestoDesdePedido(id){
+  const p = pedidos.find(x => x.id === id);
+  if (!p) return;
+  const items = (Array.isArray(p.items) ? p.items : []).map(it => {
+    const prod = productos.find(x => x.nombre === it.nombre && (x.unidad || '') === it.unidad);
+    return { producto_id: prod ? prod.id : null, nombre: it.nombre, unidad: it.unidad, precio: it.precio, cantidad: it.cantidad };
+  });
+  const base = { ...nuevoPresBase(), cliente_nombre: p.cliente_nombre || '', items, pedido_id: p.id };
+  showTab('presupuestos');
+  openPresEditor(null, base, `Armado a partir del pedido #${p.id}: se copiaron sus productos con los precios del pedido. Podés cambiar precios, cantidades y agregar el descuento.`);
+}
+
+// Presupuesto → pedido: crea el pedido ya confirmado y deja el presupuesto como aceptado.
+async function pasarPresupuestoAPedido(id){
+  const p = presupuestos.find(x => x.id === id);
+  if (!p) return;
+  if (p.pedido_id){ showTab('pedidos'); return; }
+  if (!confirm(`¿Pasar el presupuesto #${id} a pedido? Se crea un pedido confirmado con estos productos y el presupuesto queda como aceptado.`)) return;
+  const t = calcTotalesPres(p);
+  const nota = [p.nota, p.descuento_pct ? `Descuento del ${p.descuento_pct}% ya incluido en el total.` : ''].filter(Boolean).join(' ');
+  const { data, error } = await sb.from('pedidos').insert({
+    cliente_nombre: p.cliente_nombre || null,
+    nota: nota || null,
+    items: (p.items || []).map(it => ({ nombre: it.nombre, unidad: it.unidad, precio: it.precio, cantidad: it.cantidad })),
+    total: t.total,
+    estado: 'confirmado',
+    presupuesto_id: p.id,
+    user_id: null,
+  }).select().single();
+  if (error){
+    alert('No se pudo crear el pedido: ' + error.message + '\n\nSi habla de una columna que no existe, corré supabase_cuentas_y_seguridad.sql en Supabase.');
+    return;
+  }
+  const { error: e2 } = await sb.from('presupuestos').update({ estado: 'aceptado', pedido_id: data.id, actualizado_en: new Date().toISOString() }).eq('id', id);
+  if (e2) console.error('No se pudo marcar el presupuesto como aceptado:', e2.message);
+  const idx = presupuestos.findIndex(x => x.id === id);
+  if (idx >= 0) presupuestos[idx] = { ...presupuestos[idx], estado: 'aceptado', pedido_id: data.id };
+  await loadPedidos();
+  renderPresupuestosLista();
+  showTab('pedidos');
+}
+
+// ---------- Precios por planilla (Excel / CSV) ----------
+// "Descargar planilla" baja todos los productos; Karim cambia precios en Excel y los vuelve a subir con "Importar".
+// Solo se aplican los cambios de precio, oferta, sin stock y activo; las filas sin id son productos nuevos.
+
+let importPlan = null; // { cambios: [...], nuevos: [...], errores: [...] }
+
+function normKey(s){ return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_'); }
+function toBool(v){ return ['si', 'sí', 's', 'yes', 'y', 'true', '1', 'x', 'verdadero'].includes(String(v).trim().toLowerCase()); }
+function toPrice(v){
+  if (v === '' || v === null || v === undefined) return null;
+  if (typeof v === 'number') return Math.round(v);
+  let s = String(v).replace(/[^\d,.-]/g, '');
+  if (!s) return null;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? Math.round(n) : NaN;
+}
+
+function descargarPlanilla(){
+  if (!window.XLSX){ alert('No se pudo cargar el generador de Excel. Revisá tu conexión y recargá.'); return; }
+  const orden = new Map(categorias.map((c, i) => [c.id, i]));
+  const filas = [...productos]
+    .sort((a, b) => (orden.get(a.categoria_id) ?? 99) - (orden.get(b.categoria_id) ?? 99) || a.nombre.localeCompare(b.nombre, 'es'))
+    .map(p => ({
+      id: p.id, categoria: categoriaLabel(p.categoria_id), nombre: p.nombre, unidad: p.unidad || '', precio: p.precio,
+      precio_oferta: p.precio_oferta != null ? p.precio_oferta : '', sin_stock: p.sin_stock ? 'SI' : '', activo: p.activo ? 'SI' : 'NO',
+    }));
+  const ws = XLSX.utils.json_to_sheet(filas);
+  ws['!cols'] = [{ wch: 6 }, { wch: 24 }, { wch: 42 }, { wch: 9 }, { wch: 10 }, { wch: 14 }, { wch: 10 }, { wch: 8 }];
+  const ayuda = XLSX.utils.aoa_to_sheet([
+    ['Cómo usar esta planilla'],
+    ['1. Cambiá los valores de las columnas precio, precio_oferta, sin_stock y activo.'],
+    ['2. precio_oferta: dejalo vacío si no está en oferta; tiene que ser menor al precio.'],
+    ['3. sin_stock: escribí SI si no hay stock; vacío si hay. activo: SI o NO (NO lo saca del catálogo).'],
+    ['4. No cambies la columna id: es la que identifica el producto. El nombre, la unidad y la categoría no se modifican desde acá.'],
+    ['5. Para agregar un producto nuevo, sumá una fila con el id vacío y completá categoria, nombre, unidad y precio.'],
+    ['6. Guardá el archivo y subilo con "Importar precios" en el panel.'],
+  ]);
+  ayuda['!cols'] = [{ wch: 120 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Productos');
+  XLSX.utils.book_append_sheet(wb, ayuda, 'Instrucciones');
+  XLSX.writeFile(wb, 'precios-los-turquitos.xlsx');
+}
+
+async function importarPlanilla(file){
+  if (!file) return;
+  if (!window.XLSX){ alert('No se pudo cargar el lector de Excel. Revisá tu conexión y recargá.'); return; }
+  let rows;
+  try {
+    const isCsv = /\.csv$/i.test(file.name);
+    const wb = isCsv ? XLSX.read(await file.text(), { type: 'string' }) : XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+  } catch (e){
+    alert('No se pudo leer el archivo: ' + e.message);
+    return;
+  }
+  document.getElementById('imp-file').value = '';
+
+  const ALIAS = { id: 'id', categoria: 'categoria', nombre: 'nombre', producto: 'nombre', unidad: 'unidad', presentacion: 'unidad',
+    precio: 'precio', precio_oferta: 'precio_oferta', oferta: 'precio_oferta', sin_stock: 'sin_stock', activo: 'activo' };
+  const norm = rows.map(r => { const o = {}; Object.keys(r).forEach(k => { const a = ALIAS[normKey(k)]; if (a) o[a] = r[k]; }); return o; });
+  if (!norm.length || !norm.some(r => 'precio' in r)){
+    alert('No encontré la columna "precio". Usá la planilla que baja el botón "Descargar planilla".');
+    return;
+  }
+
+  const plan = { cambios: [], nuevos: [], errores: [], sinCambios: 0 };
+  const catPorTexto = (t) => categorias.find(c => normKey(c.id) === normKey(t) || normKey(c.label) === normKey(t));
+  norm.forEach((r, i) => {
+    const fila = i + 2; // fila en Excel (1 = encabezado)
+    const id = r.id === '' || r.id === undefined ? null : parseInt(r.id, 10);
+    if (id === null){
+      if (!r.nombre && !r.precio) return; // fila vacía
+      const cat = catPorTexto(r.categoria);
+      const precio = toPrice(r.precio);
+      if (!cat || !String(r.nombre).trim() || !String(r.unidad).trim() || precio === null || Number.isNaN(precio) || precio < 0){
+        plan.errores.push(`Fila ${fila}: producto nuevo incompleto (hace falta categoría existente, nombre, unidad y precio).`);
+        return;
+      }
+      const oferta = toPrice(r.precio_oferta);
+      if (oferta !== null && (Number.isNaN(oferta) || oferta >= precio)){ plan.errores.push(`Fila ${fila}: el precio de oferta tiene que ser menor al precio.`); return; }
+      plan.nuevos.push({ categoria_id: cat.id, categoria_label: cat.label, nombre: String(r.nombre).trim(), unidad: String(r.unidad).trim(), precio,
+        precio_oferta: oferta, sin_stock: toBool(r.sin_stock), activo: r.activo === '' ? true : toBool(r.activo) });
+      return;
+    }
+    const p = productos.find(x => x.id === id);
+    if (!p){ plan.errores.push(`Fila ${fila}: no existe un producto con id ${id}.`); return; }
+    const cambio = {}; const det = [];
+    const precio = 'precio' in r ? toPrice(r.precio) : null;
+    if (precio !== null){
+      if (Number.isNaN(precio) || precio < 0){ plan.errores.push(`Fila ${fila} (${p.nombre}): precio inválido "${r.precio}".`); return; }
+      if (precio !== p.precio){ cambio.precio = precio; det.push(['Precio', money(p.precio), money(precio)]); }
+    }
+    const precioFinal = cambio.precio !== undefined ? cambio.precio : p.precio;
+    if ('precio_oferta' in r){
+      const oferta = toPrice(r.precio_oferta);
+      if (Number.isNaN(oferta) || (oferta !== null && (oferta < 0 || oferta >= precioFinal))){ plan.errores.push(`Fila ${fila} (${p.nombre}): la oferta tiene que ser un número menor al precio.`); return; }
+      const actual = p.precio_oferta != null ? p.precio_oferta : null;
+      if (oferta !== actual){ cambio.precio_oferta = oferta; det.push(['Oferta', actual === null ? '—' : money(actual), oferta === null ? 'sin oferta' : money(oferta)]); }
+    }
+    if ('sin_stock' in r){
+      const v = toBool(r.sin_stock);
+      if (v !== !!p.sin_stock){ cambio.sin_stock = v; det.push(['Stock', p.sin_stock ? 'sin stock' : 'hay', v ? 'sin stock' : 'hay']); }
+    }
+    if ('activo' in r && String(r.activo).trim() !== ''){
+      const v = toBool(r.activo);
+      if (v !== !!p.activo){ cambio.activo = v; det.push(['Activo', p.activo ? 'sí' : 'no', v ? 'sí' : 'no']); }
+    }
+    if (det.length) plan.cambios.push({ id, nombre: p.nombre, unidad: p.unidad, cambio, det }); else plan.sinCambios++;
+  });
+
+  importPlan = plan;
+  const filasDet = plan.cambios.flatMap(c => c.det.map(d => `<tr><td>${escapeHtml(c.nombre)}</td><td>${escapeHtml(c.unidad || '')}</td><td>${d[0]}</td><td>${escapeHtml(d[1])} → <strong>${escapeHtml(d[2])}</strong></td></tr>`));
+  document.getElementById('imp-body').innerHTML = `
+    <p style="font-size:13px;margin:0 0 10px"><strong>${plan.cambios.length}</strong> productos con cambios · <strong>${plan.nuevos.length}</strong> nuevos · ${plan.sinCambios} sin cambios${plan.errores.length ? ` · <span style="color:var(--alta)"><strong>${plan.errores.length}</strong> con errores</span>` : ''}</p>
+    ${plan.errores.length ? `<div style="background:rgba(186,26,26,.08);border:1px solid rgba(186,26,26,.3);border-radius:6px;padding:8px 10px;font-size:12px;margin-bottom:10px;max-height:110px;overflow:auto">${plan.errores.map(e => escapeHtml(e)).join('<br>')}<br><em>Las filas con error no se aplican.</em></div>` : ''}
+    ${plan.nuevos.length ? `<p style="font-size:12.5px;margin:0 0 8px"><strong>Productos nuevos:</strong> ${plan.nuevos.map(n => escapeHtml(n.nombre) + ' (' + escapeHtml(n.unidad) + ')').join(', ')}</p>` : ''}
+    ${filasDet.length ? `<div style="max-height:280px;overflow:auto"><table class="productos-table"><thead><tr><th>Producto</th><th>Unidad</th><th>Cambio</th><th>Antes → Después</th></tr></thead><tbody>${filasDet.slice(0, 300).join('')}</tbody></table>${filasDet.length > 300 ? `<p style="font-size:11.5px;color:var(--muted)">Mostrando los primeros 300 cambios de ${filasDet.length}.</p>` : ''}</div>` : ''}`;
+  document.getElementById('imp-apply').disabled = !(plan.cambios.length || plan.nuevos.length);
+  document.getElementById('imp-status').textContent = '';
+  document.getElementById('imp-overlay').classList.add('open');
+  document.getElementById('imp-modal').classList.add('open');
+}
+
+function cerrarImport(){
+  document.getElementById('imp-overlay').classList.remove('open');
+  document.getElementById('imp-modal').classList.remove('open');
+  importPlan = null;
+}
+
+async function aplicarImport(){
+  if (!importPlan) return;
+  const btn = document.getElementById('imp-apply'), st = document.getElementById('imp-status');
+  btn.disabled = true;
+  const cola = [...importPlan.cambios];
+  let hechos = 0; const fallos = [];
+  const worker = async () => {
+    while (cola.length){
+      const c = cola.shift();
+      const { error } = await sb.from('productos').update(c.cambio).eq('id', c.id);
+      if (error) fallos.push(`${c.nombre}: ${error.message}`); else hechos++;
+      st.textContent = `Aplicando… ${hechos + fallos.length} de ${importPlan.cambios.length}`;
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  let nuevosOk = 0;
+  if (importPlan.nuevos.length){
+    const { error } = await sb.from('productos').insert(importPlan.nuevos);
+    if (error) fallos.push('Productos nuevos: ' + error.message); else nuevosOk = importPlan.nuevos.length;
+  }
+  await loadProductos();
+  if (fallos.length){
+    st.innerHTML = `<span style="color:var(--alta)">Se aplicaron ${hechos} cambios${nuevosOk ? ' y ' + nuevosOk + ' productos nuevos' : ''}, pero hubo ${fallos.length} errores:<br>${fallos.slice(0, 5).map(escapeHtml).join('<br>')}${fallos.some(f => /column/i.test(f)) ? '<br>Si habla de una columna, corré supabase_add_producto_sin_stock.sql / supabase_add_producto_oferta.sql en Supabase.' : ''}</span>`;
+    btn.disabled = false;
+    return;
+  }
+  st.innerHTML = `<span style="color:#0f6b34"><strong>Listo:</strong> ${hechos} productos actualizados${nuevosOk ? ' y ' + nuevosOk + ' nuevos' : ''}.</span>`;
+  importPlan = null;
+  setTimeout(cerrarImport, 1800);
+}
+
 // ---------- Presupuestos ----------
 // Karim arma presupuestos para sus clientes (tabla `presupuestos`), los guarda como historial y puede repetirlos.
 // Cada línea guarda su propio precio: cambiar precios en Productos no altera presupuestos ya hechos.
@@ -1555,7 +1880,7 @@ function renderPresupuestosLista(){
         <tr>
           <td>#${p.id}</td>
           <td>${new Date(p.creado_en).toLocaleDateString('es-AR')}</td>
-          <td><span class="producto-nombre">${escapeHtml(p.cliente_nombre || 'Sin nombre')}</span>${p.cliente_telefono ? `<div style="color:var(--muted);font-size:11.5px">${escapeHtml(p.cliente_telefono)}</div>` : ''}</td>
+          <td><span class="producto-nombre">${escapeHtml(p.cliente_nombre || 'Sin nombre')}</span>${p.pedido_id ? `<span class="badge-cuenta">Pedido #${p.pedido_id}</span>` : ''}${p.cliente_telefono ? `<div style="color:var(--muted);font-size:11.5px">${escapeHtml(p.cliente_telefono)}</div>` : ''}</td>
           <td>${(p.items || []).length}</td>
           <td><strong>${money(p.total)}</strong>${p.descuento_pct ? `<div style="color:var(--muted);font-size:11px">-${p.descuento_pct}% incluido</div>` : ''}</td>
           <td>
@@ -1567,6 +1892,7 @@ function renderPresupuestosLista(){
             <div class="pres-actions">
               <button onclick="openPresEditor(${p.id})">Ver / editar</button>
               <button onclick="repetirPresupuesto(${p.id})">Repetir</button>
+              <button onclick="pasarPresupuestoAPedido(${p.id})">${p.pedido_id ? 'Ver pedido' : 'Pasar a pedido'}</button>
               <button onclick="generarPresupuestoPDF(presupuestos.find(x => x.id === ${p.id}))">PDF</button>
               <button class="wa" onclick="enviarPresupuestoWhatsApp(${p.id})">WhatsApp</button>
               <button class="danger" onclick="borrarPresupuesto(${p.id})">Borrar</button>
@@ -1744,6 +2070,7 @@ async function guardarPresupuesto(opts){
     valido_hasta: p.valido_hasta || null,
     actualizado_en: new Date().toISOString(),
   };
+  if (p.pedido_id) payload.pedido_id = p.pedido_id; // solo si existe, así guardar anda aunque falte esa columna
 
   const btn = document.getElementById('pres-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
@@ -1890,7 +2217,7 @@ async function presEditorWhatsApp(){
   document.getElementById('pres-title').textContent = `Presupuesto #${presEdit.id}`;
 }
 
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape'){ closeProductoModal(); closePresEditor(); } });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape'){ closeProductoModal(); closePresEditor(); cerrarImport(); } });
 
 // ---------- Init ----------
 

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CartItem, CategoryFilter, LastOrderInfo, Product } from './types';
+import { CartItem, CategoryFilter, LastOrderInfo, OrderRow, Product, Route } from './types';
 import { DEFAULT_LOGO_URL, LOCAL_LOGO, waLink } from './lib/config';
 import { StoreData, loadStore } from './lib/supabase';
 import { useCart } from './lib/useCart';
 import { LastOrder, loadLastOrder, saveLastOrder } from './lib/lastOrder';
 import { useRoute } from './lib/useRoute';
+import { useAuth } from './lib/useAuth';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { MobileBottomNav } from './components/MobileBottomNav';
@@ -14,6 +15,8 @@ import { HomeView } from './components/views/HomeView';
 import { CatalogView } from './components/views/CatalogView';
 import { ProductDetailView } from './components/views/ProductDetailView';
 import { CartView } from './components/views/CartView';
+import { AuthView } from './components/views/AuthView';
+import { AccountView } from './components/views/AccountView';
 
 type Load = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; data: StoreData };
 
@@ -21,6 +24,8 @@ const EMPTY: StoreData = { categories: [], products: [], config: { logoUrl: null
 
 export default function App() {
   const { route, navigate } = useRoute();
+  const auth = useAuth();
+  const [afterLogin, setAfterLogin] = useState<Route>({ view: 'cuenta' }); // a dónde seguir después de ingresar
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('todos');
   const [searchQuery, setSearchQuery] = useState('');
@@ -88,6 +93,39 @@ export default function App() {
     navigate({ view: 'carrito' });
   };
 
+  // Sesión: entrar a "Mi cuenta" sin sesión lleva a ingresar; con sesión, ingresar lleva a la cuenta;
+  // el link del mail de "olvidé mi contraseña" abre el formulario de contraseña nueva.
+  useEffect(() => {
+    if (auth.loading) return;
+    if (auth.recovery && route.view !== 'ingresar') navigate({ view: 'ingresar' });
+    else if (route.view === 'cuenta' && !auth.user) navigate({ view: 'ingresar' });
+    else if (route.view === 'ingresar' && auth.user && !auth.recovery) navigate(afterLogin);
+  }, [auth.loading, auth.user, auth.recovery, route.view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const goToLogin = (then: Route) => {
+    setAfterLogin(then);
+    navigate({ view: 'ingresar' });
+  };
+
+  // "Repetir este pedido" desde el historial de la cuenta: se busca cada producto por nombre y presentación
+  const repeatOrder = (order: OrderRow) => {
+    const norm = (s: string) => s.trim().toLowerCase();
+    let added = 0;
+    (order.items ?? []).forEach((it) => {
+      const p = data.products.find((x) => norm(x.title) === norm(it.nombre));
+      const v = p?.variants.find((x) => norm(x.unit) === norm(it.unidad));
+      if (!p || !v || v.soldOut) return;
+      cart.add(p.id, v.unit, it.cantidad);
+      added += 1;
+    });
+    const skipped = (order.items ?? []).length - added;
+    setToast(
+      `Se cargaron ${added} producto${added === 1 ? '' : 's'} del pedido #${order.id}` +
+        (skipped ? ` (${skipped} ya no ${skipped === 1 ? 'está disponible' : 'están disponibles'})` : ''),
+    );
+    navigate({ view: 'carrito' });
+  };
+
   const openProduct = (p: Product) => navigate({ view: 'producto', productId: p.id });
   const goToCatalog = (category?: CategoryFilter) => {
     if (category) setSelectedCategory(category);
@@ -101,7 +139,15 @@ export default function App() {
   );
 
   let content;
-  if (load.status === 'loading') {
+  if (route.view === 'ingresar') {
+    content = <AuthView auth={auth} onDone={() => navigate(afterLogin)} onContinueAsGuest={() => navigate(afterLogin.view === 'carrito' ? afterLogin : { view: 'catalogo' })} />;
+  } else if (route.view === 'cuenta') {
+    content = auth.user ? (
+      <AccountView auth={auth} onRepeatOrder={repeatOrder} onGoToCatalog={() => goToCatalog()} />
+    ) : (
+      <div className="py-24 text-center text-sm text-[#404846]">Un momento…</div>
+    );
+  } else if (load.status === 'loading') {
     content = (
       <div className="py-32 flex flex-col items-center gap-3 text-[#49645c]">
         <span className="material-symbols-outlined text-[36px] animate-pulse">storefront</span>
@@ -182,6 +228,10 @@ export default function App() {
         lastOrder={lastOrderInfo}
         onRepeatLastOrder={repeatLastOrder}
         onOrderSent={rememberOrder}
+        loggedIn={!!auth.user}
+        accountsEnabled={auth.accountsReady}
+        profile={auth.profile}
+        onLogin={() => goToLogin({ view: 'carrito' })}
       />
     );
   }
@@ -198,6 +248,8 @@ export default function App() {
         onSearchChange={setSearchQuery}
         onOpenHowToBuy={() => setHowToOpen(true)}
         onOpenFeatured={openFeatured}
+        showAccount={auth.accountsReady}
+        accountLabel={auth.user ? (auth.profile?.nombre || auth.profile?.comercio || 'Mi cuenta').split(' ')[0] : null}
       />
 
       <main className="flex-1 w-full pt-20 sm:pt-24 md:pt-44 px-4 sm:px-6 lg:px-8">
@@ -221,7 +273,7 @@ export default function App() {
         <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
       </a>
 
-      <MobileBottomNav activeView={route.view} onNavigate={navigate} onOpenFeatured={openFeatured} />
+      <MobileBottomNav activeView={route.view} onNavigate={navigate} onOpenFeatured={openFeatured} showAccount={auth.accountsReady} />
 
       <HowToBuyModal isOpen={howToOpen} onClose={() => setHowToOpen(false)} onGoToCatalog={() => goToCatalog()} />
 

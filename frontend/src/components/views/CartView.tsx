@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { CartItem, CheckoutForm, LastOrderInfo } from '../../types';
+import { useEffect, useState } from 'react';
+import { CartItem, CheckoutForm, LastOrderInfo, Profile } from '../../types';
 import { money, waLink } from '../../lib/config';
 import { savePedido } from '../../lib/supabase';
 import { ProductImage } from '../ProductImage';
@@ -14,6 +14,10 @@ interface Props {
   lastOrder: LastOrderInfo | null;
   onRepeatLastOrder: () => void;
   onOrderSent: (items: CartItem[]) => void;
+  loggedIn: boolean;
+  accountsEnabled: boolean;
+  profile: Profile | null;
+  onLogin: () => void;
 }
 
 const EMPTY_FORM: CheckoutForm = { name: '', address: '', payment: '', schedule: '', note: '' };
@@ -40,9 +44,14 @@ function buildMessage(items: CartItem[], total: number, f: CheckoutForm) {
   return msg;
 }
 
-export function CartView({ items, total, onUpdateQuantity, onRemoveItem, onClearCart, onContinueShopping, lastOrder, onRepeatLastOrder, onOrderSent }: Props) {
+export function CartView({ items, total, onUpdateQuantity, onRemoveItem, onClearCart, onContinueShopping, lastOrder, onRepeatLastOrder, onOrderSent, loggedIn, accountsEnabled, profile, onLogin }: Props) {
   const [form, setForm] = useState<CheckoutForm>(EMPTY_FORM);
   const [sent, setSent] = useState(false);
+  // Con cuenta, nombre/comercio y dirección se completan solos con los datos guardados
+  useEffect(() => {
+    if (!profile) return;
+    setForm((f) => ({ ...f, name: f.name || profile.comercio || profile.nombre, address: f.address || profile.direccion }));
+  }, [profile, sent]);
   const set = (patch: Partial<CheckoutForm>) => setForm((f) => ({ ...f, ...patch }));
 
   const totalUnits = items.reduce((n, i) => n + i.quantity, 0);
@@ -204,6 +213,21 @@ export function CartView({ items, total, onUpdateQuantity, onRemoveItem, onClear
                 <p className="text-xs text-[#404846]">Sin pago online. Karim confirma y coordina la entrega por WhatsApp.</p>
               </div>
             </div>
+
+            {!accountsEnabled ? null : loggedIn ? (
+              <p className="text-xs text-[#0f6b34] bg-[#d8f5e3] rounded-lg px-3 py-2 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                Este pedido se guarda en tu cuenta, así lo podés repetir cuando quieras.
+              </p>
+            ) : (
+              <p className="text-xs text-[#404846] bg-[#fff3d7] rounded-lg px-3 py-2">
+                ¿Pedís seguido?{' '}
+                <button type="button" onClick={onLogin} className="font-bold text-[#01372e] underline">
+                  Ingresá o creá tu cuenta
+                </button>{' '}
+                para guardar tus datos y tus pedidos. Si no, podés seguir sin cuenta.
+              </p>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">

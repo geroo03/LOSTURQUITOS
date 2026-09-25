@@ -5,9 +5,10 @@ interface Props {
   activeView: AppView;
   onNavigate: (route: Route) => void;
   onOpenFeatured: () => void;
+  showAccount: boolean;
 }
 
-export function MobileBottomNav({ activeView, onNavigate, onOpenFeatured }: Props) {
+export function MobileBottomNav({ activeView, onNavigate, onOpenFeatured, showAccount }: Props) {
   const tab = (active: boolean) =>
     `flex flex-col items-center justify-center flex-1 h-full transition-colors ${
       active ? 'text-[#01372e] font-bold' : 'text-[#404846] hover:text-[#01372e]'
@@ -34,6 +35,15 @@ export function MobileBottomNav({ activeView, onNavigate, onOpenFeatured }: Prop
           <span className="material-symbols-outlined text-[22px] text-[#842401]">local_fire_department</span>
           <span className="text-[11px] leading-tight mt-0.5">Ofertas</span>
         </button>
+
+        {showAccount && <button
+          type="button"
+          onClick={() => onNavigate({ view: 'cuenta' })}
+          className={tab(activeView === 'cuenta' || activeView === 'ingresar')}
+        >
+          <span className="material-symbols-outlined text-[22px]" style={fill(activeView === 'cuenta' || activeView === 'ingresar')}>person</span>
+          <span className="text-[11px] leading-tight mt-0.5">Cuenta</span>
+        </button>}
 
         <a
           href={waLink('Hola Karim, quiero consultar por un pedido')}

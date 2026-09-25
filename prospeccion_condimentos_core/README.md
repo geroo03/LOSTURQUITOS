@@ -143,3 +143,15 @@ Correr **una vez** en el SQL Editor de Supabase: `supabase/supabase_add_producto
 - **Compartir producto (catálogo):** botón en la ficha; usa la hoja de compartir del celular / Safari, o WhatsApp si el navegador no la tiene.
 - **Instalable:** el catálogo tiene manifiesto e íconos, así que se puede agregar a la pantalla de inicio (celular) o al Dock (Safari → Archivo → Agregar al Dock).
 - **Vista previa del link:** al pegar el link en WhatsApp se ve el logo y el título (`frontend/public/og.jpg`).
+
+### Cuentas de cliente, planilla de precios y conversiones
+
+Correr **una vez** `supabase/supabase_cuentas_y_seguridad.sql` (entero) en el SQL Editor de Supabase. Es re-ejecutable y **rehace todas las reglas de acceso** separando *administrador* de *cliente*: los usuarios que existen hoy en Authentication quedan como administradores; cualquier cuenta nueva es solo cliente. Hasta que se corra, el catálogo no muestra ningún botón de cuenta.
+
+En Supabase → *Authentication → URL Configuration*, poner **Site URL = https://losturquitos.netlify.app** (si no, los mails de confirmación y de "olvidé mi contraseña" apuntan a otro lado). En *Providers → Email* se puede desactivar "Confirm email" para que el registro entre directo.
+
+- **Cuentas (catálogo):** registro libre y opcional (email + contraseña). Con cuenta: datos guardados que se completan solos en el pedido, historial en *Mi cuenta* y "Repetir este pedido". Sin cuenta se puede pedir igual.
+- **Administradores:** el panel y el tablero de leads solo dejan entrar a quien está en la tabla `admins`. Para sumar otro administrador: `insert into admins (user_id) select id from auth.users where email = 'mail@ejemplo.com';`
+- **Clientes (panel):** lista de cuentas registradas con cantidad de pedidos, total comprado y último pedido (sirve para definir descuentos por volumen).
+- **Planilla de precios (panel → Productos):** "Descargar planilla" baja todos los productos en Excel; se editan precio / precio_oferta / sin_stock / activo (filas sin id = productos nuevos) y se suben con "Importar precios", que muestra un resumen de cambios antes de aplicar.
+- **Pedido ⇄ presupuesto (panel):** botón "Armar presupuesto" en cada pedido, y "Pasar a pedido" en cada presupuesto (crea el pedido confirmado y deja el presupuesto como aceptado).

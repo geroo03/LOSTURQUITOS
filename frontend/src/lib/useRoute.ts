@@ -5,6 +5,8 @@ function parse(hash: string): Route {
   const [, view, id] = hash.replace(/^#/, '').split('/');
   if (view === 'catalogo') return { view: 'catalogo' };
   if (view === 'carrito') return { view: 'carrito' };
+  if (view === 'ingresar') return { view: 'ingresar' };
+  if (view === 'cuenta') return { view: 'cuenta' };
   if (view === 'producto' && id) return { view: 'producto', productId: decodeURIComponent(id) };
   return { view: 'inicio' };
 }

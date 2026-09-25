@@ -65,6 +65,8 @@ export type Route =
   | { view: 'inicio' }
   | { view: 'catalogo' }
   | { view: 'carrito' }
+  | { view: 'ingresar' }
+  | { view: 'cuenta' }
   | { view: 'producto'; productId: string };
 
 export type AppView = Route['view'];
@@ -73,4 +75,21 @@ export type AppView = Route['view'];
 export interface LastOrderInfo {
   count: number; // productos que siguen disponibles en el catálogo
   at: string; // ISO
+}
+
+/** Datos guardados del cliente (tabla `clientes`). */
+export interface Profile {
+  nombre: string;
+  comercio: string;
+  telefono: string;
+  direccion: string;
+}
+
+/** Pedido tal como se guarda en Supabase (para "Mis pedidos"). */
+export interface OrderRow {
+  id: number;
+  creado_en: string;
+  estado: string | null;
+  total: number;
+  items: { nombre: string; unidad: string; precio: number; cantidad: number }[];
 }

@@ -210,17 +210,36 @@ function escapeHtml(s){
 
 // ---------- Auth ----------
 
+// ---------- Acceso solo para administradores ----------
+// Con cuentas de cliente, "usuario logueado" ya no alcanza: solo entran los que están en la tabla `admins`.
+// Si esa tabla todavía no existe (no se corrió supabase_cuentas_y_seguridad.sql) se mantiene el comportamiento anterior.
+async function esAdmin(){
+  const { data: s } = await sb.auth.getSession();
+  const uid = s.session && s.session.user ? s.session.user.id : null;
+  if (!uid) return false;
+  const { data, error } = await sb.from('admins').select('user_id').eq('user_id', uid).maybeSingle();
+  if (error) return /admins/i.test(error.message) && /(does not exist|schema cache|relation)/i.test(error.message);
+  return !!data;
+}
+
+async function entrarSiEsAdmin(){
+  if (await esAdmin()){ showApp(); return; }
+  await sb.auth.signOut();
+  showLogin('Esta cuenta no tiene acceso al panel de administración.');
+}
+
 async function checkSession(){
   const { data } = await sb.auth.getSession();
   if (data.session){
-    showApp();
+    entrarSiEsAdmin();
   } else {
     showLogin();
   }
 }
 
-function showLogin(){
+function showLogin(msg){
   document.getElementById('login-screen').style.display = 'flex';
+  if (msg) document.getElementById('login-error').textContent = msg;
   document.getElementById('app').style.display = 'none';
   if (realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel = null; }
 }
@@ -251,7 +270,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     errorEl.textContent = 'Email o contraseña incorrectos.';
     return;
   }
-  showApp();
+  await entrarSiEsAdmin();
 });
 
 document.getElementById('logout-btn').addEventListener('click', async () => {

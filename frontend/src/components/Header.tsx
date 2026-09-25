@@ -11,6 +11,8 @@ interface HeaderProps {
   onSearchChange: (q: string) => void;
   onOpenHowToBuy: () => void;
   onOpenFeatured: () => void;
+  showAccount: boolean; // las cuentas están habilitadas
+  accountLabel: string | null; // primer nombre / "Mi cuenta" si hay sesión, o null si no
 }
 
 const navBtn = (active: boolean) =>
@@ -28,6 +30,8 @@ export function Header({
   onSearchChange,
   onOpenHowToBuy,
   onOpenFeatured,
+  showAccount,
+  accountLabel,
 }: HeaderProps) {
   const isBackView = activeView === 'producto' || activeView === 'carrito';
 
@@ -89,7 +93,7 @@ export function Header({
                   Los Turquitos
                 </span>
                 <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-[#842401] font-semibold truncate leading-none">
-                  {activeView === 'inicio' ? 'Inicio' : 'Catálogo mayorista'}
+                  {activeView === 'inicio' ? 'Inicio' : activeView === 'cuenta' || activeView === 'ingresar' ? 'Mi cuenta' : 'Catálogo mayorista'}
                 </span>
               </div>
             </button>
@@ -145,6 +149,20 @@ export function Header({
           >
             <span className="material-symbols-outlined text-[22px]">search</span>
           </button>
+
+          {showAccount && <button
+            type="button"
+            onClick={() => onNavigate(accountLabel ? { view: 'cuenta' } : { view: 'ingresar' })}
+            className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+              activeView === 'cuenta' || activeView === 'ingresar' ? 'bg-[#1f4e44] text-white' : 'text-[#01372e] hover:bg-[#faedcd]'
+            }`}
+            aria-label={accountLabel ? 'Mi cuenta' : 'Ingresar o crear cuenta'}
+          >
+            <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: accountLabel ? "'FILL' 1" : "'FILL' 0" }}>
+              person
+            </span>
+            <span className="hidden lg:inline max-w-[110px] truncate">{accountLabel ?? 'Ingresar'}</span>
+          </button>}
 
           <button
             type="button"
