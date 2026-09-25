@@ -136,3 +136,10 @@ Correr **una vez** en el SQL Editor de Supabase: `supabase/supabase_add_producto
 - **Presupuestos (panel):** pestaña *Presupuestos*. Karim arma un presupuesto (cliente, productos con precio y cantidad editables, descuento, validez, nota), lo guarda en el historial, lo baja en PDF, lo manda por WhatsApp, y puede **Repetir** uno anterior (copia nueva; el original no se toca) y actualizar los precios a los de hoy.
 - **Lista de precios (catálogo):** botón "Descargar lista de precios (PDF)", generado en el navegador con los precios y ofertas actuales.
 - **Repetir último pedido (catálogo):** el navegador guarda el último pedido enviado y ofrece cargarlo de nuevo al carrito.
+
+### Resumen, compartir e instalar
+
+- **Resumen (panel):** primera pestaña. Pedidos pendientes, ventas de hoy / 7 días / mes (los cancelados no cuentan), presupuestos por estado, gráfico de ventas de 14 días y productos más pedidos de los últimos 30 días.
+- **Compartir producto (catálogo):** botón en la ficha; usa la hoja de compartir del celular / Safari, o WhatsApp si el navegador no la tiene.
+- **Instalable:** el catálogo tiene manifiesto e íconos, así que se puede agregar a la pantalla de inicio (celular) o al Dock (Safari → Archivo → Agregar al Dock).
+- **Vista previa del link:** al pegar el link en WhatsApp se ve el logo y el título (`frontend/public/og.jpg`).

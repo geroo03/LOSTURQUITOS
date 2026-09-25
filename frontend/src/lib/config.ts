@@ -18,4 +18,22 @@ export const money = (n: number) => '$' + n.toLocaleString('es-AR');
 
 export const waLink = (text: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 
+/** Link directo a un producto del catálogo. */
+export const productUrl = (productId: string) => `${window.location.origin}/#/producto/${encodeURIComponent(productId)}`;
+
+/** Comparte un producto: hoja de compartir del sistema (celular / Safari en Mac) o, si no existe, WhatsApp con el link. */
+export async function shareProduct(productId: string, title: string) {
+  const url = productUrl(productId);
+  const text = `Mirá ${title} en Los Turquitos`;
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({ title, text, url });
+      return;
+    } catch (e) {
+      if ((e as DOMException).name === 'AbortError') return; // el usuario cerró la hoja de compartir
+    }
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(`${text}: ${url}`)}`, '_blank');
+}
+
 export const unitLabel = (unit: string) => (unit.toUpperCase() === 'UNI' ? 'unidad' : unit);

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Product } from '../../types';
-import { money, unitLabel, waLink } from '../../lib/config';
+import { money, shareProduct, unitLabel, waLink } from '../../lib/config';
 import { ProductImage } from '../ProductImage';
 import { PriceTag } from '../PriceTag';
 
@@ -181,6 +181,15 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                 </span>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => shareProduct(product.id, product.title)}
+              className="self-start inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#01372e] hover:underline"
+            >
+              <span className="material-symbols-outlined text-[18px]">ios_share</span>
+              <span>Compartir este producto</span>
+            </button>
 
             <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
               <button

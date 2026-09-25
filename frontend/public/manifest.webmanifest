@@ -1,0 +1,15 @@
+{
+  "name": "Los Turquitos — Catálogo mayorista",
+  "short_name": "Los Turquitos",
+  "description": "Condimentos, frutos secos, especias y almacén a precio de mayorista. Pedidos por WhatsApp.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff8f0",
+  "theme_color": "#1f4e44",
+  "lang": "es-AR",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

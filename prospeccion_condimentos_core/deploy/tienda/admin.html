@@ -211,6 +211,32 @@
   #producto-modal-actions{display:flex; justify-content:space-between; gap:10px; margin-top:20px}
   #producto-error{color:var(--alta); font-size:12px; min-height:1em; margin-top:10px}
 
+  /* ---------- RESUMEN ---------- */
+  #resumen-view{padding:16px 20px; max-width:980px}
+  .kpi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:16px}
+  .kpi{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; text-align:left; font-family:inherit; color:var(--text)}
+  button.kpi{cursor:pointer}
+  button.kpi:hover{border-color:#c0c8c4}
+  .kpi .k-label{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted)}
+  .kpi .k-value{font-family:'Domine',Georgia,serif; font-size:24px; font-weight:700; color:var(--mayorista); margin-top:4px}
+  .kpi .k-sub{font-size:12px; color:var(--muted); margin-top:2px}
+  .kpi.alerta .k-value{color:var(--alta)}
+  .resumen-cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:12px}
+  .resumen-card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px}
+  .resumen-card h3{font-size:14px; margin:0 0 12px}
+  .bars{display:flex; align-items:flex-end; gap:5px; height:130px; padding-top:8px}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0}
+  .bar{width:100%; background:var(--mayorista); border-radius:4px 4px 0 0; min-height:2px; opacity:.85}
+  .bar.hoy{opacity:1; background:#1ebe5d}
+  .bar-lbl{font-size:9.5px; color:var(--muted); margin-top:4px; white-space:nowrap}
+  .top-row{display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--border); font-size:12.5px}
+  .top-row:last-child{border-bottom:none}
+  .top-row .n{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600}
+  .top-row .q{color:var(--muted); white-space:nowrap}
+  .top-row .m{white-space:nowrap; font-weight:700; min-width:76px; text-align:right}
+  .chips-info{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+  .chips-info span{background:var(--panel2); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:12px}
+
   /* ---------- PRESUPUESTOS ---------- */
   #presupuestos-view{padding:16px 20px}
   .pedido-estado.borrador{border-color:var(--muted); color:var(--muted)}
@@ -312,14 +338,16 @@
   </header>
 
   <div id="tabs">
-    <button class="tab active" id="tab-pedidos" onclick="showTab('pedidos')">Pedidos</button>
+    <button class="tab active" id="tab-resumen" onclick="showTab('resumen')">Resumen</button>
+    <button class="tab" id="tab-pedidos" onclick="showTab('pedidos')">Pedidos</button>
     <button class="tab" id="tab-productos" onclick="showTab('productos')">Productos</button>
     <button class="tab" id="tab-presupuestos" onclick="showTab('presupuestos')">Presupuestos</button>
     <button class="tab" id="tab-categorias" onclick="showTab('categorias')">Categorías</button>
     <button class="tab" id="tab-config" onclick="showTab('config')">Configuración</button>
   </div>
 
-  <div id="pedidos-view"></div>
+  <div id="resumen-view"></div>
+  <div id="pedidos-view" style="display:none"></div>
   <div id="productos-view" style="display:none"></div>
   <div id="presupuestos-view" style="display:none"></div>
   <div id="categorias-view" style="display:none"></div>
@@ -532,11 +560,13 @@ async function showApp(){
 }
 
 function showTab(tab){
+  document.getElementById('tab-resumen').classList.toggle('active', tab === 'resumen');
   document.getElementById('tab-pedidos').classList.toggle('active', tab === 'pedidos');
   document.getElementById('tab-productos').classList.toggle('active', tab === 'productos');
   document.getElementById('tab-presupuestos').classList.toggle('active', tab === 'presupuestos');
   document.getElementById('tab-categorias').classList.toggle('active', tab === 'categorias');
   document.getElementById('tab-config').classList.toggle('active', tab === 'config');
+  document.getElementById('resumen-view').style.display = tab === 'resumen' ? '' : 'none';
   document.getElementById('pedidos-view').style.display = tab === 'pedidos' ? '' : 'none';
   document.getElementById('productos-view').style.display = tab === 'productos' ? '' : 'none';
   document.getElementById('presupuestos-view').style.display = tab === 'presupuestos' ? '' : 'none';
@@ -634,6 +664,7 @@ function setFiltroEstadoPedido(estado){
 }
 
 function renderPedidos(){
+  renderResumen();
   const view = document.getElementById('pedidos-view');
   if (!pedidos.length){
     view.innerHTML = `<p style="padding:20px;color:var(--muted)">Todavía no se hizo ningún pedido desde el catálogo.</p>`;
@@ -819,6 +850,7 @@ function productoRowHTML(p){
 // El toolbar (buscador + filtro) se arma una sola vez por carga de datos; escribir en el buscador
 // solo vuelve a pintar #productos-results, así el input nunca se recrea y no pierde el foco.
 function renderProductos(){
+  renderResumen();
   const view = document.getElementById('productos-view');
   if (!productos.length){
     view.innerHTML = `<p style="padding:20px;color:var(--muted)">Todavía no hay productos cargados. Usá "+ Nuevo producto" o cargalos con <code>migrate_productos_to_supabase.py</code>.</p>`;
@@ -1351,6 +1383,96 @@ async function restablecerTagline(){
   renderConfiguracion();
 }
 
+// ---------- Resumen ----------
+// Panorama del negocio a partir de lo que ya está cargado (pedidos, presupuestos, productos). Los pedidos
+// cancelados no cuentan como venta.
+
+function claveDia(d){ return new Date(d).toLocaleDateString('en-CA'); } // YYYY-MM-DD en hora local
+
+function irAPedidosPendientes(){
+  filtroEstadoPedido = 'pendiente';
+  renderPedidos();
+  showTab('pedidos');
+}
+
+function renderResumen(){
+  const view = document.getElementById('resumen-view');
+  if (!view) return;
+  const ventas = pedidos.filter(p => p.estado !== 'cancelado');
+  const ahora = new Date();
+  const hoy = claveDia(ahora);
+  const desde = (dias) => { const d = new Date(ahora); d.setHours(0,0,0,0); d.setDate(d.getDate() - dias + 1); return d; };
+  const suma = (lista) => lista.reduce((n, p) => n + (p.total || 0), 0);
+  const enRango = (lista, d0) => lista.filter(p => new Date(p.creado_en) >= d0);
+
+  const dePedidoHoy = ventas.filter(p => claveDia(p.creado_en) === hoy);
+  const semana = enRango(ventas, desde(7));
+  const mes = ventas.filter(p => { const d = new Date(p.creado_en); return d.getMonth() === ahora.getMonth() && d.getFullYear() === ahora.getFullYear(); });
+  const pendientes = pedidos.filter(p => (p.estado || 'pendiente') === 'pendiente');
+
+  const presMes = presupuestos.filter(p => { const d = new Date(p.creado_en); return d.getMonth() === ahora.getMonth() && d.getFullYear() === ahora.getFullYear(); });
+  const porEstado = (e) => presupuestos.filter(p => p.estado === e);
+  const aceptadosMes = presMes.filter(p => p.estado === 'aceptado');
+
+  // Últimos 14 días
+  const dias = [];
+  for (let i = 13; i >= 0; i--){ const d = new Date(ahora); d.setDate(d.getDate() - i); dias.push({ key: claveDia(d), label: d.getDate() + '/' + (d.getMonth() + 1), total: 0, n: 0 }); }
+  ventas.forEach(p => { const dia = dias.find(x => x.key === claveDia(p.creado_en)); if (dia){ dia.total += p.total || 0; dia.n++; } });
+  const maxDia = Math.max(1, ...dias.map(d => d.total));
+
+  // Productos más pedidos (30 días)
+  const top = {};
+  enRango(ventas, desde(30)).forEach(p => (Array.isArray(p.items) ? p.items : []).forEach(it => {
+    const k = it.nombre + '|' + it.unidad;
+    top[k] = top[k] || { nombre: it.nombre, unidad: it.unidad, cant: 0, monto: 0 };
+    top[k].cant += it.cantidad || 0;
+    top[k].monto += (it.precio || 0) * (it.cantidad || 0);
+  }));
+  const ranking = Object.values(top).sort((a, b) => b.monto - a.monto).slice(0, 8);
+
+  const kpi = (label, value, sub, extra = '', onclick = '') => {
+    const tag = onclick ? `button class="kpi ${extra}" onclick="${onclick}"` : `div class="kpi ${extra}"`;
+    return `<${tag}><div class="k-label">${label}</div><div class="k-value">${value}</div><div class="k-sub">${sub}</div></${onclick ? 'button' : 'div'}>`;
+  };
+  const cnt = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+
+  view.innerHTML = `
+    <div class="kpi-grid">
+      ${kpi('Pedidos pendientes', pendientes.length, pendientes.length ? 'Tocá para verlos' : 'Todo al día', pendientes.length ? 'alerta' : '', 'irAPedidosPendientes()')}
+      ${kpi('Ventas de hoy', money(suma(dePedidoHoy)), cnt(dePedidoHoy.length, 'pedido', 'pedidos'))}
+      ${kpi('Últimos 7 días', money(suma(semana)), cnt(semana.length, 'pedido', 'pedidos'))}
+      ${kpi('Este mes', money(suma(mes)), cnt(mes.length, 'pedido', 'pedidos'))}
+    </div>
+    <div class="kpi-grid">
+      ${kpi('Presupuestos en borrador', porEstado('borrador').length, 'Sin enviar', '', "showTab('presupuestos')")}
+      ${kpi('Presupuestos enviados', porEstado('enviado').length, 'Esperando respuesta', '', "showTab('presupuestos')")}
+      ${kpi('Aceptados este mes', aceptadosMes.length, money(suma(aceptadosMes)), '', "showTab('presupuestos')")}
+    </div>
+    <div class="resumen-cols">
+      <div class="resumen-card">
+        <h3>Ventas por día (14 días)</h3>
+        <div class="bars">${dias.map(d => `
+          <div class="bar-col" title="${d.label}: ${money(d.total)} (${cnt(d.n, 'pedido', 'pedidos')})">
+            <div class="bar ${d.key === hoy ? 'hoy' : ''}" style="height:${Math.round(d.total / maxDia * 100)}%"></div>
+            <div class="bar-lbl">${d.label}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="resumen-card">
+        <h3>Productos más pedidos (30 días)</h3>
+        ${ranking.length ? ranking.map(r => `
+          <div class="top-row"><span class="n">${escapeHtml(r.nombre)}</span><span class="q">${r.cant} × ${escapeHtml(r.unidad)}</span><span class="m">${money(r.monto)}</span></div>`).join('')
+          : `<p style="color:var(--muted);font-size:12.5px;margin:0">Todavía no hay pedidos en los últimos 30 días.</p>`}
+      </div>
+    </div>
+    <div class="chips-info">
+      <span>${productos.filter(p => p.activo).length} productos activos</span>
+      <span>${productos.filter(p => p.activo && p.precio_oferta != null && p.precio_oferta < p.precio).length} en oferta</span>
+      <span>${productos.filter(p => p.activo && p.sin_stock).length} sin stock</span>
+      <span>${productos.filter(p => p.destacado).length} destacados</span>
+    </div>`;
+}
+
 // ---------- Presupuestos ----------
 // Karim arma presupuestos para sus clientes (tabla `presupuestos`), los guarda como historial y puede repetirlos.
 // Cada línea guarda su propio precio: cambiar precios en Productos no altera presupuestos ya hechos.
@@ -1409,6 +1531,7 @@ function renderPresupuestos(){
 }
 
 function renderPresupuestosLista(){
+  renderResumen();
   const q = filtroPresTexto.trim().toLowerCase();
   const list = presupuestos.filter(p => {
     if (filtroPresEstado && p.estado !== filtroPresEstado) return false;
