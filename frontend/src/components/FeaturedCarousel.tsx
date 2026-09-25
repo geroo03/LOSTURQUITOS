@@ -11,39 +11,109 @@ interface Props {
   onSeeAll: (filter: CategoryFilter) => void;
 }
 
-const AUTOPLAY_MS = 4500;
+const SPEED_PX_PER_S = 38; // velocidad del desplazamiento continuo
+const REDUCED_STEP_MS = 4500; // con "Reducir movimiento": salto de a una página, sin deslizar
+const MIN_FOR_LOOP = 4; // con menos tarjetas no hay bucle: no alcanzan para llenar el ancho
 
-/** Carrusel de ofertas y destacados: scroll con snap (tocar/arrastrar), flechas y avance automático que se pausa al interactuar. */
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * Carrusel de ofertas y destacados. Se desplaza de forma continua y suave (como una cinta) en bucle infinito;
+ * se frena al pasar el mouse, tocar o enfocar, y tiene botón de pausa y flechas. Con "Reducir movimiento"
+ * activado en el sistema, en vez de deslizar avanza de a una página sin animación.
+ */
 export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
   const track = useRef<HTMLDivElement>(null);
-  const paused = useRef(false); // pausa temporal por mouse/foco/touch
-  const [playing, setPlaying] = useState(true); // pausa elegida con el botón
-  const playingRef = useRef(true);
+  const hoverPaused = useRef(false);
+  const userPaused = useRef(false);
+  const holdUntil = useRef(0); // tras tocar/usar flechas se espera un momento antes de retomar
+  const pos = useRef(0); // posición con decimales (scrollLeft se redondea en algunos navegadores)
+  const [playing, setPlaying] = useState(true);
   const [added, setAdded] = useState<string | null>(null);
 
-  const scrollByPage = useCallback((dir: 1 | -1) => {
+  const loop = products.length >= MIN_FOR_LOOP;
+  const items = loop ? [...products, ...products] : products;
+
+  const halfWidth = () => (track.current ? track.current.scrollWidth / 2 : 0);
+  const hold = (ms: number) => (holdUntil.current = performance.now() + ms);
+
+  // Movimiento continuo con requestAnimationFrame
+  useEffect(() => {
     const el = track.current;
-    if (!el) return;
-    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-    // Con "Reducir movimiento" activado en el sistema el carrusel igual avanza, pero sin animación de deslizamiento.
-    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    if (dir === 1 && atEnd) el.scrollTo({ left: 0, behavior });
-    else el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior });
+    if (!el || !loop || prefersReducedMotion()) return;
+    let raf = 0;
+    let last = performance.now();
+    pos.current = el.scrollLeft;
+
+    const tick = (now: number) => {
+      const dt = Math.min(now - last, 50); // si la pestaña estuvo oculta no pegar un salto
+      last = now;
+      const idle = hoverPaused.current || userPaused.current || now < holdUntil.current || document.hidden;
+      if (!idle) {
+        pos.current += (SPEED_PX_PER_S * dt) / 1000;
+        const half = halfWidth();
+        if (half > 0 && pos.current >= half) pos.current -= half; // empalme invisible: la 2ª copia es idéntica a la 1ª
+        el.scrollLeft = pos.current;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [loop]);
+
+  // Con "Reducir movimiento": avance por páginas, instantáneo
+  useEffect(() => {
+    const el = track.current;
+    if (!el || !prefersReducedMotion()) return;
+    const id = setInterval(() => {
+      if (hoverPaused.current || userPaused.current || document.hidden) return;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+      if (atEnd) el.scrollTo({ left: 0, behavior: 'auto' });
+      else el.scrollBy({ left: el.clientWidth * 0.8, behavior: 'auto' });
+    }, REDUCED_STEP_MS);
+    return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (playingRef.current && !paused.current && !document.hidden) scrollByPage(1);
-    }, AUTOPLAY_MS);
-    return () => clearInterval(id);
-  }, [scrollByPage]);
+  // Cuando el usuario mueve el carrusel (touch, trackpad, flechas) se toma la posición real y se mantiene el bucle
+  const onScroll = () => {
+    const el = track.current;
+    if (!el) return;
+    const idle = hoverPaused.current || userPaused.current || performance.now() < holdUntil.current;
+    if (loop) {
+      // La 2ª copia es idéntica a la 1ª, así que restar `half` no se nota. Se deja una franja de un ancho de pantalla
+      // (zona de aterrizaje del botón "anterior") antes de empalmar, para que ese salto no se deshaga solo.
+      const half = halfWidth();
+      if (half > 0 && el.scrollLeft >= half + el.clientWidth) el.scrollLeft -= half;
+    }
+    if (idle) pos.current = el.scrollLeft;
+  };
+
+  const scrollByPage = useCallback(
+    (dir: 1 | -1) => {
+      const el = track.current;
+      if (!el) return;
+      hold(1500);
+      const reduced = prefersReducedMotion();
+      const behavior = reduced ? 'auto' : 'smooth';
+      if (loop && dir === -1 && el.scrollLeft < el.clientWidth * 0.8) {
+        el.scrollLeft += halfWidth(); // saltar a la 2ª copia (idéntica) para poder retroceder sin llegar al tope
+      }
+      el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior });
+    },
+    [loop],
+  );
 
   const togglePlaying = () => {
-    playingRef.current = !playingRef.current;
-    setPlaying(playingRef.current);
+    userPaused.current = !userPaused.current;
+    setPlaying(!userPaused.current);
+    if (!userPaused.current && track.current) pos.current = track.current.scrollLeft;
   };
-  const pause = () => (paused.current = true);
-  const resume = () => (paused.current = false);
+
+  const onEnter = () => (hoverPaused.current = true);
+  const onLeave = () => {
+    hoverPaused.current = false;
+    if (track.current) pos.current = track.current.scrollLeft;
+  };
 
   if (!products.length) return null;
 
@@ -92,20 +162,30 @@ export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
 
       <div
         ref={track}
-        onMouseEnter={pause}
-        onMouseLeave={resume}
-        onFocus={pause}
-        onBlur={resume}
-        onTouchStart={pause}
-        onTouchEnd={() => setTimeout(resume, 4000)}
-        className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-2 -mx-1 px-1 scroll-smooth"
+        onScroll={onScroll}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+        onFocus={onEnter}
+        onBlur={onLeave}
+        onTouchStart={() => {
+          hoverPaused.current = true;
+        }}
+        onTouchEnd={() => {
+          hold(2500);
+          hoverPaused.current = false;
+          if (track.current) pos.current = track.current.scrollLeft;
+        }}
+        className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1"
       >
-        {products.map((p) => {
+        {items.map((p, i) => {
           const v = p.variants[0];
+          const isCopy = loop && i >= products.length; // 2ª copia del bucle: solo decorativa
           return (
             <article
-              key={p.id}
-              className="snap-start shrink-0 w-[62%] sm:w-[36%] md:w-[28%] lg:w-[22%] bg-white rounded-2xl p-3 border border-[#efe1c2] shadow-sm flex flex-col gap-2 group hover:shadow-md transition-shadow"
+              key={`${p.id}-${isCopy ? 'b' : 'a'}`}
+              inert={isCopy}
+              aria-hidden={isCopy || undefined}
+              className="shrink-0 w-[62%] sm:w-[36%] md:w-[28%] lg:w-[22%] bg-white rounded-2xl p-3 border border-[#efe1c2] shadow-sm flex flex-col gap-2 group hover:shadow-md transition-shadow"
             >
               <button
                 type="button"
