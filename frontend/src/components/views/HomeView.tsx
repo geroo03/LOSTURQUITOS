@@ -3,6 +3,7 @@ import { Category, CategoryFilter, LastOrderInfo, Product, StoreConfig } from '.
 import { DEFAULT_TAGLINE, WHATSAPP_DISPLAY, waLink } from '../../lib/config';
 import { FeaturedCarousel } from '../FeaturedCarousel';
 import { PriceListButton } from '../PriceListButton';
+import { CategorySections, sectionId } from '../CategorySections';
 
 interface Props {
   products: Product[];
@@ -26,16 +27,6 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
   const spotlight = useMemo(
     () => [...products.filter((p) => p.onSale && !p.soldOut), ...products.filter((p) => p.featured && !p.onSale && !p.soldOut)].slice(0, 16),
     [products],
-  );
-
-  // Mosaico de rubros: la portada de cada rubro es la primera foto de sus productos.
-  const tiles = useMemo(
-    () =>
-      categories.slice(0, 3).map((c) => {
-        const inCat = products.filter((p) => p.categoryId === c.id);
-        return { ...c, count: inCat.length, image: inCat.find((p) => p.images[0])?.images[0] };
-      }),
-    [categories, products],
   );
 
   return (
@@ -145,12 +136,19 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
       {/* 2. Carrusel de ofertas y destacados (arriba, para que se vea sin scrollear de más) */}
       <FeaturedCarousel products={spotlight} onOpen={onSelectProduct} onAdd={onAddToCart} onSeeAll={onGoToCatalog} />
 
-      {/* 3. Chips de categorías */}
-      <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="font-mono text-xs uppercase text-[#842401] font-bold tracking-wider">Categorías</span>
-          <span className="text-xs text-[#49645c] font-medium hidden sm:inline">Deslizá →</span>
+      {/* 3. Catálogo completo, separado por categoría: se ve sin salir del inicio */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between px-1">
+          <h2 className="font-serif text-xl sm:text-2xl text-[#01372e] font-bold">Catálogo completo</h2>
+          <button
+            type="button"
+            onClick={() => onGoToCatalog()}
+            className="text-xs sm:text-sm font-bold text-[#49645c] hover:text-[#01372e] transition-colors"
+          >
+            Buscar y filtrar →
+          </button>
         </div>
+        {/* Chips: saltan a cada categoría de abajo */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
           <button
             type="button"
@@ -164,81 +162,15 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
             <button
               key={c.id}
               type="button"
-              onClick={() => onGoToCatalog(c.id)}
+              onClick={() => document.getElementById(sectionId(c.id))?.scrollIntoView({ behavior: 'smooth' })}
               className="shrink-0 px-4 py-2 rounded-xl bg-[#f4e7c8] text-[#211b08] hover:bg-[#efe1c2] text-xs sm:text-sm font-semibold shadow-sm transition-colors"
             >
               {c.label}
             </button>
           ))}
         </div>
+        <CategorySections products={products} categories={categories} onOpen={onSelectProduct} onAdd={onAddToCart} />
       </section>
-
-      {/* 3. Mosaico de rubros */}
-      {tiles.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between px-1">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#01372e] font-bold">Navegar por rubro</h2>
-            <button
-              type="button"
-              onClick={() => onGoToCatalog()}
-              className="text-xs sm:text-sm font-bold text-[#49645c] hover:text-[#01372e] transition-colors"
-            >
-              Ver todo →
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {tiles.map((t, i) => {
-              const big = i === 0;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => onGoToCatalog(t.id)}
-                  className={`text-left relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between border border-[#efe1c2] group ${
-                    big ? 'col-span-2 bg-white p-4 sm:p-5 h-48 sm:h-52' : 'col-span-1 bg-[#f4e7c8] p-3 sm:p-4 h-44 sm:h-48'
-                  }`}
-                >
-                  {t.image && (
-                    <img
-                      src={t.image}
-                      alt=""
-                      loading="lazy"
-                      className={`absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
-                        big ? 'opacity-35' : 'opacity-25'
-                      }`}
-                    />
-                  )}
-                  <div className="relative z-10 flex justify-between items-start w-full">
-                    {big ? (
-                      <span className="font-mono text-[10px] bg-[#842401] text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                        Rubro principal
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                    <span className="w-8 h-8 rounded-full bg-[#faedcd]/80 backdrop-blur-sm flex items-center justify-center text-[#01372e] group-hover:bg-[#01372e] group-hover:text-white transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">north_east</span>
-                    </span>
-                  </div>
-                  <div
-                    className={`relative z-10 flex flex-col ${
-                      big ? 'bg-white/90 backdrop-blur-md -mx-4 sm:-mx-5 -mb-4 sm:-mb-5 p-3 sm:p-4 rounded-b-2xl' : ''
-                    }`}
-                  >
-                    <span className="font-mono text-[9px] sm:text-[10px] text-[#5d1700] font-bold tracking-wider uppercase">
-                      {t.count} productos
-                    </span>
-                    <span className="font-serif text-sm sm:text-base lg:text-lg font-bold text-[#01372e] leading-snug">
-                      {t.label}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
 
       {/* 4. Cómo comprar */}
       <section className="rounded-2xl bg-[#01372e] text-white p-5 sm:p-7 shadow-sm flex flex-col gap-4 relative overflow-hidden border border-[#204e44]">

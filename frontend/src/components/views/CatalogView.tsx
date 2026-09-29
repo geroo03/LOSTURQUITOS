@@ -3,6 +3,7 @@ import { Category, CategoryFilter, Product } from '../../types';
 import { waLink } from '../../lib/config';
 import { ProductCard } from '../ProductCard';
 import { PriceListButton } from '../PriceListButton';
+import { CategorySections } from '../CategorySections';
 
 interface Props {
   products: Product[];
@@ -63,6 +64,9 @@ export function CatalogView({
     else if (sortBy === 'nombre') list.sort((a, b) => a.title.localeCompare(b.title, 'es'));
     return list;
   }, [products, selectedCategory, searchQuery, limit, sortBy]);
+
+  // Con "Todos" u ofertas, los productos se muestran separados por categoría (en el orden de Karim).
+  const grouped = ['todos', 'destacados', 'ofertas'].includes(selectedCategory);
 
   const reset = () => {
     onSelectCategory('todos');
@@ -241,6 +245,21 @@ export function CatalogView({
                 Restablecer catálogo
               </button>
             </div>
+          ) : grouped ? (
+            <CategorySections
+              products={filtered}
+              categories={categories}
+              onOpen={onSelectProduct}
+              onAdd={onAddToCart}
+              onSeeCategory={
+                selectedCategory === 'todos'
+                  ? (id) => {
+                      onSelectCategory(id);
+                      window.scrollTo({ top: 0 });
+                    }
+                  : undefined
+              }
+            />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {filtered.map((p) => (
