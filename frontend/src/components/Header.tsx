@@ -1,8 +1,10 @@
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AppView, Route } from '../types';
 import { WHATSAPP_DISPLAY, waLink, money } from '../lib/config';
 
 interface HeaderProps {
   activeView: AppView;
+  offersActive: boolean; // en el catálogo con el filtro "Ofertas y destacados"
   logoUrl: string;
   onNavigate: (route: Route) => void;
   cartCount: number;
@@ -15,13 +17,61 @@ interface HeaderProps {
   accountLabel: string | null; // primer nombre / "Mi cuenta" si hay sesión, o null si no
 }
 
+// El fondo del botón activo lo pone la "gota" que se desliza (ver DropPill), no el botón.
 const navBtn = (active: boolean) =>
-  `px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-    active ? 'bg-[#1f4e44] text-white shadow-sm font-bold' : 'text-[#404846] hover:text-[#01372e] hover:bg-[#faedcd]'
+  `relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-300 ${
+    active ? 'text-white font-bold' : 'text-[#404846] hover:text-[#01372e] hover:bg-[#faedcd]'
   }`;
+
+type NavTab = 'inicio' | 'catalogo' | 'ofertas';
+
+/**
+ * Pastilla "gota de agua" de las pestañas (tablet y PC): se desliza hasta el botón activo tomando su ancho,
+ * se estira en el viaje, rebota al llegar y deja una onda. Si ninguna pestaña está activa se evapora.
+ */
+function DropPill({ active, buttons }: { active: NavTab | null; buttons: React.RefObject<Partial<Record<NavTab, HTMLButtonElement | null>>> }) {
+  const [box, setBox] = useState<{ left: number; width: number } | null>(null);
+  const lastActive = useRef<NavTab | null>(null);
+  const cameFromNowhere = lastActive.current === null;
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = active ? buttons.current[active] : null;
+      if (el) setBox({ left: el.offsetLeft, width: el.offsetWidth });
+    };
+    measure();
+    document.fonts?.ready.then(measure); // las fuentes web cambian el ancho de los botones al cargar
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [active, buttons]);
+
+  useEffect(() => {
+    lastActive.current = active;
+  }, [active]);
+
+  if (!box) return null;
+  return (
+    <div
+      aria-hidden="true"
+      className={`absolute top-1.5 bottom-1.5 left-0 pointer-events-none transition-[transform,width,opacity] duration-500 ease-[cubic-bezier(.65,0,.35,1)] ${
+        active ? 'opacity-100' : 'opacity-0'
+      }`}
+      style={{ transform: `translateX(${box.left}px)`, width: box.width }}
+    >
+      <span
+        key={`drop-${active}`}
+        className={`absolute inset-0 rounded-lg bg-[#1f4e44] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.18),inset_0_1px_2px_rgba(255,255,255,0.18),0_2px_6px_rgba(1,55,46,0.25)] ${
+          !active ? '' : cameFromNowhere ? 'animate-drop-in' : 'animate-drop-travel-soft'
+        }`}
+      />
+      {active && <span key={`ripple-${active}`} className="absolute inset-0 rounded-lg border-2 border-[#1f4e44]/40 animate-drop-ripple-soft" />}
+    </div>
+  );
+}
 
 export function Header({
   activeView,
+  offersActive,
   logoUrl,
   onNavigate,
   cartCount,
@@ -34,6 +84,15 @@ export function Header({
   accountLabel,
 }: HeaderProps) {
   const isBackView = activeView === 'producto' || activeView === 'carrito';
+  const tabRefs = useRef<Partial<Record<NavTab, HTMLButtonElement | null>>>({});
+  const activeTab: NavTab | null =
+    activeView === 'inicio'
+      ? 'inicio'
+      : activeView === 'catalogo' && offersActive
+        ? 'ofertas'
+        : activeView === 'catalogo' || activeView === 'producto'
+          ? 'catalogo'
+          : null;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#fff8f0]/95 backdrop-blur-md shadow-[0_2px_12px_rgba(1,55,46,0.06)] border-b border-[#faedcd]">
@@ -193,15 +252,36 @@ export function Header({
       {/* Pestañas (tablet y PC). En celular se usa MobileBottomNav */}
       <nav className="hidden md:block bg-[#fff3d7] border-t border-[#efe1c2]">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
-          <div className="flex items-center gap-1 sm:gap-2 py-1.5 overflow-x-auto no-scrollbar">
-            <button type="button" onClick={() => onNavigate({ view: 'inicio' })} className={navBtn(activeView === 'inicio')}>
+          <div className="relative flex items-center gap-1 sm:gap-2 py-1.5 overflow-x-auto no-scrollbar">
+            <DropPill active={activeTab} buttons={tabRefs} />
+            <button
+              type="button"
+              ref={(el) => void (tabRefs.current.inicio = el)}
+              onClick={() => onNavigate({ view: 'inicio' })}
+              className={navBtn(activeTab === 'inicio')}
+              aria-current={activeTab === 'inicio' ? 'page' : undefined}
+            >
               Inicio
             </button>
-            <button type="button" onClick={() => onNavigate({ view: 'catalogo' })} className={navBtn(activeView === 'catalogo')}>
+            <button
+              type="button"
+              ref={(el) => void (tabRefs.current.catalogo = el)}
+              onClick={() => onNavigate({ view: 'catalogo' })}
+              className={navBtn(activeTab === 'catalogo')}
+              aria-current={activeTab === 'catalogo' ? 'page' : undefined}
+            >
               Catálogo
             </button>
-            <button type="button" onClick={onOpenFeatured} className={`${navBtn(false)} flex items-center gap-1`}>
-              <span className="material-symbols-outlined text-[16px] text-[#842401]">local_fire_department</span>
+            <button
+              type="button"
+              ref={(el) => void (tabRefs.current.ofertas = el)}
+              onClick={onOpenFeatured}
+              className={`${navBtn(activeTab === 'ofertas')} flex items-center gap-1`}
+              aria-current={activeTab === 'ofertas' ? 'page' : undefined}
+            >
+              <span className={`material-symbols-outlined text-[16px] transition-colors duration-300 ${activeTab === 'ofertas' ? 'text-[#ffb59e]' : 'text-[#842401]'}`}>
+                local_fire_department
+              </span>
               <span>Ofertas y destacados</span>
             </button>
             <button type="button" onClick={onOpenHowToBuy} className={navBtn(false)}>

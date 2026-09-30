@@ -132,6 +132,7 @@ export default function App() {
     navigate({ view: 'catalogo' });
   };
   const openFeatured = () => goToCatalog('destacados');
+  const offersActive = route.view === 'catalogo' && selectedCategory === 'destacados';
 
   const product = useMemo(
     () => (route.view === 'producto' ? data.products.find((p) => p.id === route.productId) : undefined),
@@ -240,6 +241,7 @@ export default function App() {
     <div className="min-h-screen bg-[#fff8f0] flex flex-col font-sans selection:bg-[#01372e] selection:text-white">
       <Header
         activeView={route.view}
+        offersActive={offersActive}
         logoUrl={logoUrl}
         onNavigate={navigate}
         cartCount={cart.count}
@@ -273,7 +275,7 @@ export default function App() {
         <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
       </a>
 
-      <MobileBottomNav activeView={route.view} onNavigate={navigate} onOpenFeatured={openFeatured} showAccount={auth.accountsReady} />
+      <MobileBottomNav activeView={route.view} offersActive={offersActive} onNavigate={navigate} onOpenFeatured={openFeatured} showAccount={auth.accountsReady} />
 
       <HowToBuyModal isOpen={howToOpen} onClose={() => setHowToOpen(false)} onGoToCatalog={() => goToCatalog()} />
 
