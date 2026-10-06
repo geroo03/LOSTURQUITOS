@@ -113,7 +113,7 @@
   #productos-view{padding:16px 20px}
   #productos-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px}
   #productos-toolbar .spacer{flex:1}
-  #productos-count{color:var(--muted); font-size:12px}
+  #productos-count, .toolbar-count{color:var(--muted); font-size:12px}
   .btn-primary{background:#01372e; border-color:#01372e; color:#fff}
   .btn-primary:hover{border-color:#1f4e44}
   .productos-table{width:100%; border-collapse:collapse; font-size:12.5px}
@@ -463,6 +463,9 @@
     </div>
   </div>
 
+  <label for="pf-precio-minorista">Precio minorista (opcional)</label>
+  <input type="number" id="pf-precio-minorista" min="0" step="1" placeholder="Vacío = precio + recargo minorista de Configuración">
+
   <div class="check-row">
     <input type="checkbox" id="pf-activo" checked>
     <label for="pf-activo">Visible en el catálogo</label>
@@ -534,6 +537,8 @@ let productos = [];    // filas tal cual vienen de la tabla `productos` de Supab
 let categorias = [];   // filas tal cual vienen de la tabla `categorias` de Supabase, ordenadas por `orden`
 let presupuestos = []; // filas de la tabla `presupuestos`
 let presEdit = null;    // presupuesto en edición dentro del modal (copia de trabajo)
+// Búsquedas sin importar mayúsculas ni tildes ("pimenton" encuentra "Pimentón").
+const normBusqueda = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 let filtroPresTexto = '';
 let filtroPresEstado = '';
 let pedidosChannel = null;
@@ -548,6 +553,7 @@ let productoGaleriaUrls = [];  // imagenes[] en edición dentro del modal
 let logoUrl = null;  // logo_url de la fila única de `configuracion`, o null si no hay logo cargado
 let fondoUrl = null;  // fondo_url de la fila única de `configuracion`, o null si no hay imagen de fondo
 let tagline = null;   // tagline de la fila única de `configuracion`, o null si se usa el texto de por defecto
+let recargoMinorista = null; // % sobre el precio mayorista para la lista minorista, o null si todavía no se configuró
 // Mismo texto que trae por defecto el HTML del catálogo (catalogo_los_turquitos.html) — se muestra acá
 // como referencia de lo que ve el cliente cuando no hay una descripción propia cargada.
 const DEFAULT_TAGLINE = 'Condimentos, frutos secos, especias, aceitunas, encurtidos, repostería y semillas a precio de mayorista. Armá tu pedido acá abajo y te lo mandamos directo por WhatsApp.';
@@ -885,7 +891,8 @@ function productoRowHTML(p){
       <td>${escapeHtml(p.unidad || '')}</td>
       <td>${p.precio_oferta != null && p.precio_oferta < p.precio
         ? `<s style="color:var(--muted)">${money(p.precio)}</s> <strong style="color:var(--alta)">${money(p.precio_oferta)}</strong>`
-        : money(p.precio)}</td>
+        : money(p.precio)}${precioMinoristaDe(p) != null
+        ? `<div style="font-size:11px;color:var(--muted)">Minorista: ${money(precioMinoristaDe(p))}</div>` : ''}</td>
       <td>
         <div class="producto-row-actions">
           <button onclick="openProductoModal(${p.id})">Editar</button>
@@ -917,6 +924,7 @@ function renderProductos(){
       </select>
       <span id="productos-count"></span>
       <div class="spacer"></div>
+      <button class="btn" onclick="generarListaMinoristaPDF()" title="Lista de precios de venta al público (precio mayorista + recargo, o el precio minorista propio de cada producto)">📄 Lista minorista (PDF)</button>
       <button class="btn" onclick="descargarPlanilla()" title="Baja todos los productos en Excel para editar precios">⬇ Descargar planilla</button>
       <button class="btn" onclick="document.getElementById('imp-file').click()" title="Sube la planilla con los precios nuevos">⬆ Importar precios</button>
       <button class="btn btn-primary" onclick="openProductoModal(null)">+ Nuevo producto</button>
@@ -938,10 +946,10 @@ function renderProductos(){
 }
 
 function renderProductosResults(){
-  const q = filtroProductoTexto.trim().toLowerCase();
+  const q = normBusqueda(filtroProductoTexto.trim());
   const filtrados = productos.filter(p => {
     if (filtroProductoCategoria && p.categoria_id !== filtroProductoCategoria) return false;
-    if (q && !p.nombre.toLowerCase().includes(q)) return false;
+    if (q && !normBusqueda(p.nombre).includes(q)) return false;
     return true;
   });
 
@@ -1003,6 +1011,7 @@ function openProductoModal(id){
   document.getElementById('pf-nombre').value = p ? p.nombre : '';
   document.getElementById('pf-unidad').value = p ? (p.unidad || '') : '';
   document.getElementById('pf-precio').value = p ? p.precio : '';
+  document.getElementById('pf-precio-minorista').value = p && p.precio_minorista != null ? p.precio_minorista : '';
   document.getElementById('pf-activo').checked = p ? !!p.activo : true;
   document.getElementById('pf-destacado').checked = p ? !!p.destacado : false;
   document.getElementById('pf-sin-stock').checked = p ? !!p.sin_stock : false;
@@ -1098,6 +1107,8 @@ async function guardarProducto(){
   const sinStock = document.getElementById('pf-sin-stock').checked;
   const enOferta = document.getElementById('pf-oferta').checked;
   const precioOferta = parseInt(document.getElementById('pf-precio-oferta').value, 10);
+  const precioMinoristaTxt = document.getElementById('pf-precio-minorista').value.trim();
+  const precioMinorista = precioMinoristaTxt === '' ? null : parseInt(precioMinoristaTxt, 10);
   const descripcion = document.getElementById('pf-descripcion').value.trim();
   const errorEl = document.getElementById('producto-error');
 
@@ -1107,6 +1118,10 @@ async function guardarProducto(){
   }
   if (enOferta && (!Number.isFinite(precioOferta) || precioOferta < 0 || precioOferta >= precio)){
     errorEl.textContent = 'El precio de oferta tiene que ser un número menor al precio normal.';
+    return;
+  }
+  if (precioMinorista !== null && (!Number.isFinite(precioMinorista) || precioMinorista < 0)){
+    errorEl.textContent = 'El precio minorista tiene que ser un número válido (o dejalo vacío para usar el recargo).';
     return;
   }
   errorEl.textContent = '';
@@ -1125,6 +1140,8 @@ async function guardarProducto(){
   else if (existente && 'sin_stock' in existente) payload.sin_stock = false;
   if (enOferta) payload.precio_oferta = precioOferta;
   else if (existente && 'precio_oferta' in existente) payload.precio_oferta = null;
+  if (precioMinorista !== null) payload.precio_minorista = precioMinorista;
+  else if (existente && 'precio_minorista' in existente) payload.precio_minorista = null;
 
   const saveBtn = document.getElementById('pf-save');
   saveBtn.disabled = true;
@@ -1301,7 +1318,7 @@ async function borrarCategoria(id){
 // ---------- Configuración (logo del negocio) ----------
 
 async function loadConfiguracion(){
-  const { data, error } = await sb.from('configuracion').select('logo_url, fondo_url, tagline').eq('id', 1).maybeSingle();
+  const { data, error } = await sb.from('configuracion').select('*').eq('id', 1).maybeSingle();
   if (error){
     document.getElementById('config-view').innerHTML = `<p style="padding:20px;color:var(--muted)">Error cargando la configuración: ${escapeHtml(error.message)}</p>`;
     return;
@@ -1309,7 +1326,9 @@ async function loadConfiguracion(){
   logoUrl = data ? data.logo_url : null;
   fondoUrl = data ? data.fondo_url : null;
   tagline = data ? data.tagline : null;
+  recargoMinorista = data && data.recargo_minorista != null ? Number(data.recargo_minorista) : null;
   renderConfiguracion();
+  if (document.getElementById('productos-results')) renderProductosResults(); // para mostrar los precios minoristas
 }
 
 function renderConfiguracion(){
@@ -1354,7 +1373,39 @@ function renderConfiguracion(){
         ${tagline ? '<button class="btn" onclick="restablecerTagline()">Restablecer texto original</button>' : ''}
         <span class="upload-status" id="tagline-status"></span>
       </div>
+    </div>
+
+    <div class="config-card" style="margin-top:16px" id="config-minorista">
+      <h3>Lista de precios minorista</h3>
+      <p class="sub">Recargo sobre el precio mayorista para la lista de venta al público (se redondea hacia arriba a $10). En los productos que tengan un "Precio minorista" propio cargado en su ficha se usa ese precio.</p>
+      <div class="logo-actions">
+        <input type="number" id="recargo-input" min="0" step="1" placeholder="Ej: 35" value="${recargoMinorista ?? ''}" style="width:90px"> <span>%</span>
+        <button class="btn btn-primary" onclick="guardarRecargoMinorista()">Guardar recargo</button>
+        <button class="btn" onclick="generarListaMinoristaPDF()">📄 Descargar lista minorista (PDF)</button>
+        <span class="upload-status" id="recargo-status"></span>
+      </div>
     </div>`;
+}
+
+async function guardarRecargoMinorista(){
+  const status = document.getElementById('recargo-status');
+  const txt = document.getElementById('recargo-input').value.trim();
+  const valor = txt === '' ? null : Number(txt.replace(',', '.'));
+  if (valor !== null && (!Number.isFinite(valor) || valor < 0)){
+    status.textContent = 'Poné un porcentaje válido (ej: 35).';
+    return;
+  }
+  status.textContent = 'Guardando...';
+  const { error } = await sb.from('configuracion').update({ recargo_minorista: valor }).eq('id', 1);
+  if (error){
+    status.textContent = /recargo_minorista/.test(error.message)
+      ? 'Falta correr supabase_add_precio_minorista.sql en el SQL Editor de Supabase.'
+      : 'Error al guardar: ' + error.message;
+    return;
+  }
+  recargoMinorista = valor;
+  status.textContent = 'Guardado ✓';
+  if (document.getElementById('productos-results')) renderProductosResults();
 }
 
 async function guardarLogoUrl(url){
@@ -1548,7 +1599,7 @@ function renderClientes(){
   document.getElementById('clientes-view').innerHTML = `
     <div id="productos-toolbar">
       <input type="text" id="clientes-search" placeholder="Buscar por nombre, comercio o email...">
-      <span id="clientes-count"></span>
+      <span id="clientes-count" class="toolbar-count"></span>
     </div>
     <div id="clientes-list"></div>`;
   const s = document.getElementById('clientes-search');
@@ -1558,14 +1609,14 @@ function renderClientes(){
 }
 
 function renderClientesLista(){
-  const q = filtroClienteTexto.trim().toLowerCase();
+  const q = normBusqueda(filtroClienteTexto.trim());
   const stats = {};
   pedidos.filter(p => p.user_id && p.estado !== 'cancelado').forEach(p => {
     const s = stats[p.user_id] = stats[p.user_id] || { n: 0, total: 0, ultimo: null };
     s.n++; s.total += p.total || 0;
     if (!s.ultimo || new Date(p.creado_en) > new Date(s.ultimo)) s.ultimo = p.creado_en;
   });
-  const list = clientes.filter(c => !q || `${c.nombre || ''} ${c.comercio || ''} ${c.email || ''}`.toLowerCase().includes(q));
+  const list = clientes.filter(c => !q || normBusqueda(`${c.nombre || ''} ${c.comercio || ''} ${c.email || ''}`).includes(q));
   document.getElementById('clientes-count').textContent = `${list.length} de ${clientes.length}`;
   const box = document.getElementById('clientes-list');
   if (!clientes.length){
@@ -1661,14 +1712,15 @@ function descargarPlanilla(){
     .sort((a, b) => (orden.get(a.categoria_id) ?? 99) - (orden.get(b.categoria_id) ?? 99) || a.nombre.localeCompare(b.nombre, 'es'))
     .map(p => ({
       id: p.id, categoria: categoriaLabel(p.categoria_id), nombre: p.nombre, unidad: p.unidad || '', precio: p.precio,
-      precio_oferta: p.precio_oferta != null ? p.precio_oferta : '', sin_stock: p.sin_stock ? 'SI' : '', activo: p.activo ? 'SI' : 'NO',
+      precio_oferta: p.precio_oferta != null ? p.precio_oferta : '', precio_minorista: p.precio_minorista != null ? p.precio_minorista : '',
+      sin_stock: p.sin_stock ? 'SI' : '', activo: p.activo ? 'SI' : 'NO',
     }));
   const ws = XLSX.utils.json_to_sheet(filas);
-  ws['!cols'] = [{ wch: 6 }, { wch: 24 }, { wch: 42 }, { wch: 9 }, { wch: 10 }, { wch: 14 }, { wch: 10 }, { wch: 8 }];
+  ws['!cols'] = [{ wch: 6 }, { wch: 24 }, { wch: 42 }, { wch: 9 }, { wch: 10 }, { wch: 14 }, { wch: 16 }, { wch: 10 }, { wch: 8 }];
   const ayuda = XLSX.utils.aoa_to_sheet([
     ['Cómo usar esta planilla'],
-    ['1. Cambiá los valores de las columnas precio, precio_oferta, sin_stock y activo.'],
-    ['2. precio_oferta: dejalo vacío si no está en oferta; tiene que ser menor al precio.'],
+    ['1. Cambiá los valores de las columnas precio, precio_oferta, precio_minorista, sin_stock y activo.'],
+    ['2. precio_oferta: dejalo vacío si no está en oferta; tiene que ser menor al precio. precio_minorista: dejalo vacío para usar el recargo minorista de Configuración.'],
     ['3. sin_stock: escribí SI si no hay stock; vacío si hay. activo: SI o NO (NO lo saca del catálogo).'],
     ['4. No cambies la columna id: es la que identifica el producto. El nombre, la unidad y la categoría no se modifican desde acá.'],
     ['5. Para agregar un producto nuevo, sumá una fila con el id vacío y completá categoria, nombre, unidad y precio.'],
@@ -1696,7 +1748,8 @@ async function importarPlanilla(file){
   document.getElementById('imp-file').value = '';
 
   const ALIAS = { id: 'id', categoria: 'categoria', nombre: 'nombre', producto: 'nombre', unidad: 'unidad', presentacion: 'unidad',
-    precio: 'precio', precio_oferta: 'precio_oferta', oferta: 'precio_oferta', sin_stock: 'sin_stock', activo: 'activo' };
+    precio: 'precio', precio_oferta: 'precio_oferta', oferta: 'precio_oferta', precio_minorista: 'precio_minorista', minorista: 'precio_minorista',
+    sin_stock: 'sin_stock', activo: 'activo' };
   const norm = rows.map(r => { const o = {}; Object.keys(r).forEach(k => { const a = ALIAS[normKey(k)]; if (a) o[a] = r[k]; }); return o; });
   if (!norm.length || !norm.some(r => 'precio' in r)){
     alert('No encontré la columna "precio". Usá la planilla que baja el botón "Descargar planilla".');
@@ -1718,8 +1771,12 @@ async function importarPlanilla(file){
       }
       const oferta = toPrice(r.precio_oferta);
       if (oferta !== null && (Number.isNaN(oferta) || oferta >= precio)){ plan.errores.push(`Fila ${fila}: el precio de oferta tiene que ser menor al precio.`); return; }
-      plan.nuevos.push({ categoria_id: cat.id, categoria_label: cat.label, nombre: String(r.nombre).trim(), unidad: String(r.unidad).trim(), precio,
-        precio_oferta: oferta, sin_stock: toBool(r.sin_stock), activo: r.activo === '' ? true : toBool(r.activo) });
+      const minorista = toPrice(r.precio_minorista);
+      if (Number.isNaN(minorista) || (minorista !== null && minorista < 0)){ plan.errores.push(`Fila ${fila}: precio minorista inválido "${r.precio_minorista}".`); return; }
+      const nuevo = { categoria_id: cat.id, categoria_label: cat.label, nombre: String(r.nombre).trim(), unidad: String(r.unidad).trim(), precio,
+        precio_oferta: oferta, sin_stock: toBool(r.sin_stock), activo: r.activo === '' ? true : toBool(r.activo) };
+      if (minorista !== null) nuevo.precio_minorista = minorista;
+      plan.nuevos.push(nuevo);
       return;
     }
     const p = productos.find(x => x.id === id);
@@ -1736,6 +1793,12 @@ async function importarPlanilla(file){
       if (Number.isNaN(oferta) || (oferta !== null && (oferta < 0 || oferta >= precioFinal))){ plan.errores.push(`Fila ${fila} (${p.nombre}): la oferta tiene que ser un número menor al precio.`); return; }
       const actual = p.precio_oferta != null ? p.precio_oferta : null;
       if (oferta !== actual){ cambio.precio_oferta = oferta; det.push(['Oferta', actual === null ? '—' : money(actual), oferta === null ? 'sin oferta' : money(oferta)]); }
+    }
+    if ('precio_minorista' in r){
+      const minorista = toPrice(r.precio_minorista);
+      if (Number.isNaN(minorista) || (minorista !== null && minorista < 0)){ plan.errores.push(`Fila ${fila} (${p.nombre}): precio minorista inválido "${r.precio_minorista}".`); return; }
+      const actual = p.precio_minorista != null ? p.precio_minorista : null;
+      if (minorista !== actual){ cambio.precio_minorista = minorista; det.push(['Minorista', actual === null ? 'recargo' : money(actual), minorista === null ? 'recargo' : money(minorista)]); }
     }
     if ('sin_stock' in r){
       const v = toBool(r.sin_stock);
@@ -1789,7 +1852,7 @@ async function aplicarImport(){
   }
   await loadProductos();
   if (fallos.length){
-    st.innerHTML = `<span style="color:var(--alta)">Se aplicaron ${hechos} cambios${nuevosOk ? ' y ' + nuevosOk + ' productos nuevos' : ''}, pero hubo ${fallos.length} errores:<br>${fallos.slice(0, 5).map(escapeHtml).join('<br>')}${fallos.some(f => /column/i.test(f)) ? '<br>Si habla de una columna, corré supabase_add_producto_sin_stock.sql / supabase_add_producto_oferta.sql en Supabase.' : ''}</span>`;
+    st.innerHTML = `<span style="color:var(--alta)">Se aplicaron ${hechos} cambios${nuevosOk ? ' y ' + nuevosOk + ' productos nuevos' : ''}, pero hubo ${fallos.length} errores:<br>${fallos.slice(0, 5).map(escapeHtml).join('<br>')}${fallos.some(f => /column/i.test(f)) ? '<br>Si habla de una columna, corré supabase_add_producto_sin_stock.sql / supabase_add_producto_oferta.sql / supabase_add_precio_minorista.sql en Supabase.' : ''}</span>`;
     btn.disabled = false;
     return;
   }
@@ -1808,6 +1871,107 @@ const ESTADOS_PRES = [
   { id: 'aceptado',  label: 'Aceptado' },
   { id: 'rechazado', label: 'Rechazado' },
 ];
+
+// Precio de venta al público de una variante: el propio si Karim lo cargó; si no, el precio de lista mayorista
+// (sin la oferta) + el recargo general, redondeado hacia arriba a $10. null si no hay forma de calcularlo.
+function precioMinoristaDe(p){
+  if (p.precio_minorista != null) return p.precio_minorista;
+  if (recargoMinorista == null) return null;
+  return Math.ceil(p.precio * (1 + recargoMinorista / 100) / 10) * 10;
+}
+
+// Lista de precios minorista en PDF: mismo formato que la lista mayorista del catálogo (frontend/src/lib/priceList.ts).
+async function generarListaMinoristaPDF(){
+  const activos = productos.filter(p => p.activo);
+  const faltan = activos.filter(p => precioMinoristaDe(p) == null);
+  if (faltan.length){
+    alert(`Primero configurá el recargo minorista (%) en Configuración. Hay ${faltan.length} productos sin precio minorista propio.`);
+    showTab('config');
+    document.getElementById('recargo-input')?.focus();
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const TEAL = [31, 78, 68], GREY = [112, 121, 118], INK = [33, 27, 8], CREAM = [244, 231, 200];
+  const W = 210, M = 14, BOTTOM = 280, COL_UNIT = 128, COL_PRICE = W - M;
+  let page = 1, y = 0;
+
+  const footer = () => {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...GREY);
+    doc.text('Precios de venta al público sujetos a modificación · Los Turquitos · WhatsApp +54 9 3856 14-9181', M, 289);
+    doc.text(`Página ${page}`, W - M, 289, { align: 'right' });
+  };
+  const newPage = () => { footer(); doc.addPage(); page += 1; y = 18; };
+
+  let titleX = M;
+  try {
+    doc.addImage(await cargarImagenComoDataURL(logoUrl || 'logo.jpg'), 'JPEG', M, 10, 20, 20);
+    titleX = M + 25;
+  } catch (e){ console.error('No se pudo incrustar el logo en el PDF:', e); }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...TEAL);
+  doc.text('Los Turquitos', titleX, 20);
+  doc.setFontSize(11); doc.setTextColor(...INK);
+  doc.text('Lista de precios minorista', titleX, 27);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...GREY);
+  doc.text(`Actualizada al ${new Date().toLocaleDateString('es-AR')}`, W - M, 20, { align: 'right' });
+  y = 38;
+
+  // Cada fila de `productos` es una variante: se agrupan por nombre dentro de cada categoría, en el orden del catálogo.
+  const porId = [...activos].sort((a, b) => a.id - b.id);
+  for (const cat of categorias){
+    const grupos = new Map();
+    porId.filter(p => p.categoria_id === cat.id).forEach(p => {
+      const k = normBusqueda(p.nombre.trim());
+      if (!grupos.has(k)) grupos.set(k, { nombre: p.nombre, variantes: [] });
+      grupos.get(k).variantes.push(p);
+    });
+    if (!grupos.size) continue;
+
+    if (y > BOTTOM - 30) newPage();
+    doc.setFillColor(...TEAL);
+    doc.roundedRect(M, y, W - 2 * M, 7, 1.2, 1.2, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(255, 255, 255);
+    doc.text(cat.label.toUpperCase(), M + 3, y + 5);
+    doc.setFontSize(8);
+    doc.text('PRESENTACIÓN', COL_UNIT, y + 5);
+    doc.text('PRECIO', COL_PRICE - 2, y + 5, { align: 'right' });
+    y += 11;
+
+    [...grupos.values()].forEach((g, gi) => {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); // medir el nombre con la letra con la que se escribe
+      const nameLines = doc.splitTextToSize(g.nombre, COL_UNIT - M - 6);
+      const rowsHeight = Math.max(nameLines.length * 4.4, g.variantes.length * 5.2) + 2;
+      if (y + rowsHeight > BOTTOM) newPage();
+      if (gi % 2 === 0){
+        doc.setFillColor(...CREAM);
+        doc.setGState(new doc.GState({ opacity: 0.45 }));
+        doc.rect(M, y - 3.8, W - 2 * M, rowsHeight, 'F');
+        doc.setGState(new doc.GState({ opacity: 1 }));
+      }
+      const agotado = g.variantes.every(v => v.sin_stock);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...(agotado ? GREY : INK));
+      doc.text(nameLines, M + 2, y);
+      let vy = y;
+      g.variantes.forEach(v => {
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...INK);
+        doc.text(v.unidad || '', COL_UNIT, vy);
+        if (v.sin_stock){
+          doc.setTextColor(...GREY);
+          doc.text('Sin stock', COL_PRICE - 2, vy, { align: 'right' });
+        } else {
+          doc.setFont('helvetica', 'bold');
+          doc.text(money(precioMinoristaDe(v)), COL_PRICE - 2, vy, { align: 'right' });
+        }
+        vy += 5.2;
+      });
+      y += rowsHeight;
+    });
+    y += 5;
+  }
+
+  footer();
+  doc.save('lista-de-precios-minorista-los-turquitos.pdf');
+}
 
 function precioActualProducto(p){
   return (p.precio_oferta != null && p.precio_oferta < p.precio) ? p.precio_oferta : p.precio;
@@ -1843,7 +2007,7 @@ function renderPresupuestos(){
         <option value="">Todos los estados</option>
         ${ESTADOS_PRES.map(e => `<option value="${e.id}">${e.label}</option>`).join('')}
       </select>
-      <span id="productos-count"></span>
+      <span id="pres-count" class="toolbar-count"></span>
       <div class="spacer"></div>
       <button class="btn btn-primary" onclick="openPresEditor(null)">+ Nuevo presupuesto</button>
     </div>
@@ -1857,13 +2021,13 @@ function renderPresupuestos(){
 
 function renderPresupuestosLista(){
   renderResumen();
-  const q = filtroPresTexto.trim().toLowerCase();
+  const q = normBusqueda(filtroPresTexto.trim());
   const list = presupuestos.filter(p => {
     if (filtroPresEstado && p.estado !== filtroPresEstado) return false;
-    if (q && !(`${p.id} ${p.cliente_nombre || ''}`.toLowerCase().includes(q))) return false;
+    if (q && !normBusqueda(`${p.id} ${p.cliente_nombre || ''}`).includes(q)) return false;
     return true;
   });
-  document.getElementById('productos-count').textContent = `${list.length} de ${presupuestos.length}`;
+  document.getElementById('pres-count').textContent = `${list.length} de ${presupuestos.length}`;
   const box = document.getElementById('pres-results-list');
   if (!presupuestos.length){
     box.innerHTML = `<p style="padding:20px;color:var(--muted)">Todavía no hay presupuestos. Usá "+ Nuevo presupuesto" para armar el primero.</p>`;
@@ -1965,10 +2129,10 @@ function repetirPresupuesto(id){
 }
 
 function renderPresResultados(){
-  const q = document.getElementById('pres-buscar').value.trim().toLowerCase();
+  const q = normBusqueda(document.getElementById('pres-buscar').value.trim());
   const box = document.getElementById('pres-results');
   if (!q){ box.style.display = 'none'; return; }
-  const found = productos.filter(p => p.activo && p.nombre.toLowerCase().includes(q)).slice(0, 12);
+  const found = productos.filter(p => p.activo && normBusqueda(p.nombre).includes(q)).slice(0, 12);
   box.innerHTML = found.length
     ? found.map(p => `
         <button onclick="agregarLineaPres(${p.id})">

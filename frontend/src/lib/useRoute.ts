@@ -27,7 +27,10 @@ export function useRoute() {
     return () => window.removeEventListener('hashchange', onChange);
   }, []);
 
+  // La vista cambia en el acto (no recién en el hashchange), así quien navega puede, por ejemplo,
+  // enfocar el buscador del catálogo dentro del mismo toque.
   const navigate = useCallback((r: Route) => {
+    setRoute(r);
     window.location.hash = routeHref(r);
   }, []);
 

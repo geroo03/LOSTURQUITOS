@@ -19,6 +19,7 @@ interface Props {
 type Sort = 'orden' | 'precio-asc' | 'precio-desc' | 'nombre';
 
 const minPrice = (p: Product) => Math.min(...p.variants.map((v) => v.price));
+export const CATALOG_SEARCH_ID = 'catalogo-buscar';
 const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export function CatalogView({
@@ -113,9 +114,11 @@ export function CatalogView({
       {/* Búsqueda y orden */}
       <section className="bg-white p-3 sm:p-4 rounded-2xl border border-[#efe1c2] shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="relative flex-1">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#49645c] text-[20px]">search</span>
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#49645c] text-[20px] pointer-events-none">search</span>
           <input
+            id={CATALOG_SEARCH_ID}
             type="text"
+            enterKeyHint="search"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscá comino, pimentón, nueces, orégano…"

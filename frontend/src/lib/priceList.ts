@@ -86,6 +86,9 @@ export async function downloadPriceList(products: Product[], categories: Categor
     y += 11;
 
     inCat.forEach((p, pi) => {
+      // El nombre se mide con la misma letra con la que se escribe; si no, los nombres largos pisan la presentación.
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
       const nameLines = doc.splitTextToSize(p.title, COL_UNIT - M - 6) as string[];
       const rowsHeight = Math.max(nameLines.length * 4.4, p.variants.length * 5.2) + 2;
       if (y + rowsHeight > BOTTOM) newPage();

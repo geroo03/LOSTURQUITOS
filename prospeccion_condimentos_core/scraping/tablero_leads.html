@@ -394,9 +394,12 @@ function openWhatsapp(id, digits){
   window.open(`https://wa.me/${digits}?text=${text}`, '_blank');
 }
 
+// Búsqueda sin importar mayúsculas ni tildes ("santiago del estero" = "Santiago del Estero", "dietetica" = "Dietética").
+const normBusqueda = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 function getFilters(){
   return {
-    search: document.getElementById('search').value.trim().toLowerCase(),
+    search: normBusqueda(document.getElementById('search').value.trim()),
     tipo: document.getElementById('filter-tipo').value,
     prioridad: document.getElementById('filter-prioridad').value,
     ciudad: document.getElementById('filter-ciudad').value,
@@ -408,7 +411,7 @@ function matchesFilters(l, f){
   if (f.prioridad && l.prioridad !== f.prioridad) return false;
   if (f.ciudad && l.ciudad !== f.ciudad) return false;
   if (f.search){
-    const hay = `${l.empresa} ${l.ciudad} ${l.categoria_producto}`.toLowerCase();
+    const hay = normBusqueda(`${l.empresa} ${l.ciudad} ${l.categoria_producto}`);
     if (!hay.includes(f.search)) return false;
   }
   return true;

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { CartItem, CategoryFilter, LastOrderInfo, OrderRow, Product, Route } from './types';
 import { DEFAULT_LOGO_URL, LOCAL_LOGO, waLink } from './lib/config';
 import { StoreData, loadStore } from './lib/supabase';
@@ -12,7 +13,7 @@ import { MobileBottomNav } from './components/MobileBottomNav';
 import { FloatingCartBar } from './components/FloatingCartBar';
 import { HowToBuyModal } from './components/HowToBuyModal';
 import { HomeView } from './components/views/HomeView';
-import { CatalogView } from './components/views/CatalogView';
+import { CATALOG_SEARCH_ID, CatalogView } from './components/views/CatalogView';
 import { ProductDetailView } from './components/views/ProductDetailView';
 import { CartView } from './components/views/CartView';
 import { AuthView } from './components/views/AuthView';
@@ -132,6 +133,26 @@ export default function App() {
     navigate({ view: 'catalogo' });
   };
   const openFeatured = () => goToCatalog('destacados');
+
+  // Lupa del celular: lleva al buscador del catálogo y lo enfoca en el mismo toque (si no, iOS no abre el teclado).
+  const openSearch = () => {
+    if (route.view !== 'catalogo') {
+      setSelectedCategory('todos');
+      flushSync(() => navigate({ view: 'catalogo' }));
+    }
+    const input = document.getElementById(CATALOG_SEARCH_ID) as HTMLInputElement | null;
+    input?.focus({ preventScroll: true });
+    input?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
+
+  // Escribir en el buscador de arriba desde otra vista busca en todo el catálogo, no solo en la última categoría elegida.
+  const searchFromHeader = (q: string) => {
+    if (q && route.view !== 'catalogo') {
+      setSelectedCategory('todos');
+      navigate({ view: 'catalogo' });
+    }
+    setSearchQuery(q);
+  };
   const offersActive = route.view === 'catalogo' && selectedCategory === 'destacados';
 
   const product = useMemo(
@@ -247,7 +268,8 @@ export default function App() {
         cartCount={cart.count}
         cartTotal={cart.total}
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={searchFromHeader}
+        onOpenSearch={openSearch}
         onOpenHowToBuy={() => setHowToOpen(true)}
         onOpenFeatured={openFeatured}
         showAccount={auth.accountsReady}

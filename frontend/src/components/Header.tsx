@@ -10,7 +10,8 @@ interface HeaderProps {
   cartCount: number;
   cartTotal: number;
   searchQuery: string;
-  onSearchChange: (q: string) => void;
+  onSearchChange: (q: string) => void; // si no está en el catálogo, lo abre
+  onOpenSearch: () => void; // lupa del celular: abre el buscador del catálogo
   onOpenHowToBuy: () => void;
   onOpenFeatured: () => void;
   showAccount: boolean; // las cuentas están habilitadas
@@ -78,6 +79,7 @@ export function Header({
   cartTotal,
   searchQuery,
   onSearchChange,
+  onOpenSearch,
   onOpenHowToBuy,
   onOpenFeatured,
   showAccount,
@@ -168,10 +170,8 @@ export function Header({
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => {
-                onSearchChange(e.target.value);
-                if (activeView !== 'catalogo') onNavigate({ view: 'catalogo' });
-              }}
+              onChange={(e) => onSearchChange(e.target.value)}
+              enterKeyHint="search"
               placeholder="Buscar comino, pimentón, frutos secos, semillas…"
               className="w-full pl-10 pr-9 py-2 bg-white border border-[#c0c8c4] rounded-xl text-sm text-[#211b08] placeholder-[#707976] focus:outline-none focus:ring-2 focus:ring-[#01372e] focus:border-transparent shadow-sm"
             />
@@ -202,9 +202,9 @@ export function Header({
 
           <button
             type="button"
-            onClick={() => onNavigate({ view: 'catalogo' })}
+            onClick={onOpenSearch}
             className="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-[#01372e] hover:bg-[#faedcd] transition-colors"
-            aria-label="Ir al catálogo y buscar"
+            aria-label="Buscar productos"
           >
             <span className="material-symbols-outlined text-[22px]">search</span>
           </button>
