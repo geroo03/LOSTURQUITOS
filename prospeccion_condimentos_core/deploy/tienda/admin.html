@@ -7,6 +7,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Domine:wght@600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -305,6 +307,24 @@
   #pres-error{color:var(--alta); font-size:12px; min-height:1em; margin-top:10px}
 
   /* ---------- CONFIGURACIÓN ---------- */
+  /* ---------- NOTIFICACIONES PUSH ---------- */
+  #push-btn{
+    display:flex; align-items:center; gap:6px; background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    padding:7px 12px; border-radius:6px; font-size:13px; cursor:pointer;
+  }
+  #push-btn:hover{border-color:#c0c8c4}
+  #push-btn.on{background:rgba(26,156,77,.12); border-color:#1a9c4d; color:#1a9c4d}
+  #push-btn .dot{width:7px; height:7px; border-radius:50%; background:#1a9c4d; display:none}
+  #push-btn.on .dot{display:inline-block}
+  #push-toast{
+    position:fixed; top:16px; right:16px; z-index:80; background:var(--panel); border:1px solid var(--border);
+    border-left:3px solid var(--mayorista); border-radius:8px; padding:12px 14px; box-shadow:0 12px 30px -12px rgba(33,27,8,.3);
+    max-width:320px; font-size:13px; cursor:pointer; opacity:0; transform:translateY(-8px); pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  #push-toast.show{opacity:1; transform:translateY(0); pointer-events:auto}
+  #push-toast strong{display:block; margin-bottom:2px}
+
   #config-view{padding:16px 20px; max-width:420px}
   .config-card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:20px}
   .config-card h3{font-size:14px; margin:0 0 4px}
@@ -347,8 +367,14 @@
     <span class="live-dot">En vivo</span>
     <span class="sub">Panel de Karim — pedidos, productos y configuración del catálogo</span>
     <div class="spacer"></div>
+    <button class="btn" id="push-btn" onclick="activarNotificacionesPush()" title="Te avisa en este navegador cuando entra un pedido nuevo">
+      <span class="dot"></span>🔔 <span class="label">Notificarme pedidos nuevos</span>
+    </button>
     <button class="btn" id="logout-btn">Cerrar sesión</button>
   </header>
+
+<div id="push-toast" onclick="irAPedidosPendientes(); ocultarPushToast();"></div>
+
 
   <div id="tabs">
     <button class="tab active" id="tab-resumen" onclick="showTab('resumen')">Resumen</button>
@@ -603,6 +629,7 @@ function showLogin(msg){
 }
 
 async function showApp(){
+  initPushUI();
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   await loadCategorias();
@@ -674,6 +701,7 @@ function subscribeRealtimePedidos(){
     .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, (payload) => {
       if (payload.eventType === 'INSERT'){
         pedidos.unshift(payload.new);
+        avisarPedidoNuevo(payload.new);
       } else if (payload.eventType === 'UPDATE'){
         const idx = pedidos.findIndex(p => p.id === payload.new.id);
         if (idx >= 0) pedidos[idx] = payload.new; else pedidos.unshift(payload.new);
@@ -1859,6 +1887,124 @@ async function aplicarImport(){
   st.innerHTML = `<span style="color:#0f6b34"><strong>Listo:</strong> ${hechos} productos actualizados${nuevosOk ? ' y ' + nuevosOk + ' nuevos' : ''}.</span>`;
   importPlan = null;
   setTimeout(cerrarImport, 1800);
+}
+
+// ---------- Notificaciones push (Firebase Cloud Messaging) ----------
+// Dos capas, independientes entre sí:
+// 1) Aviso local INMEDIATO mientras el panel está abierto: usa el canal realtime que ya existe
+//    (subscribeRealtimePedidos) — no depende de Firebase, anda apenas se corre supabase_add_push_tokens.sql
+//    o incluso sin correrlo (solo usa el toast en pantalla).
+// 2) Push real de Firebase, para cuando el panel está cerrado: requiere el proyecto de Firebase
+//    configurado acá abajo (FIREBASE_CONFIG y FIREBASE_VAPID_KEY) y en firebase-messaging-sw.js,
+//    más algo del lado servidor que dispare el envío (por ejemplo una Edge Function de Supabase
+//    escuchando INSERT en `pedidos`) — ese envío automático todavía no está armado, queda pendiente.
+//
+// ⚠️ Completar con los datos reales de Firebase Console (Configuración del proyecto → tus apps → Web):
+const FIREBASE_CONFIG = {
+  apiKey: 'REEMPLAZAR',
+  authDomain: 'REEMPLAZAR.firebaseapp.com',
+  projectId: 'REEMPLAZAR',
+  storageBucket: 'REEMPLAZAR.appspot.com',
+  messagingSenderId: 'REEMPLAZAR',
+  appId: 'REEMPLAZAR',
+};
+// Firebase Console → Configuración del proyecto → Cloud Messaging → "Configuración web" → Generar par de claves.
+const FIREBASE_VAPID_KEY = 'REEMPLAZAR';
+
+let pushMessaging = null;
+let pushToastTimer = null;
+
+function pushConfigurado(){
+  return Object.values(FIREBASE_CONFIG).every(v => v && v !== 'REEMPLAZAR' && !String(v).includes('REEMPLAZAR')) && FIREBASE_VAPID_KEY !== 'REEMPLAZAR';
+}
+
+function mostrarPushToast(titulo, cuerpo){
+  const el = document.getElementById('push-toast');
+  el.innerHTML = `<strong>${escapeHtml(titulo)}</strong>${escapeHtml(cuerpo || '')}`;
+  el.classList.add('show');
+  clearTimeout(pushToastTimer);
+  pushToastTimer = setTimeout(ocultarPushToast, 6000);
+}
+function ocultarPushToast(){ document.getElementById('push-toast').classList.remove('show'); }
+
+// Capa 1: aviso local mientras el panel está abierto (se engancha al realtime que ya existía).
+function avisarPedidoNuevo(p){
+  const titulo = '🛎️ Pedido nuevo de ' + (p.cliente_nombre || 'un cliente');
+  const items = Array.isArray(p.items) ? p.items.length : 0;
+  mostrarPushToast(titulo, `${items} producto(s) · ${money(p.total)}`);
+  try { new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=').play().catch(() => {}); } catch (e){}
+  if (window.Notification && Notification.permission === 'granted' && document.hidden){
+    try { new Notification(titulo, { body: `${items} producto(s) · ${money(p.total)}`, icon: '/icon-192.png' }); } catch (e){}
+  }
+}
+
+// Capa 2: registro en Firebase (token) para push real con el panel cerrado.
+async function activarNotificacionesPush(){
+  const btn = document.getElementById('push-btn');
+  if (!('Notification' in window) || !('serviceWorker' in navigator)){
+    alert('Tu navegador no soporta notificaciones push. En Android, usá Chrome.');
+    return;
+  }
+  if (Notification.permission === 'denied'){
+    alert('Bloqueaste las notificaciones para este sitio. Para activarlas, habilitalas desde el ícono de información/candado en la barra de direcciones.');
+    return;
+  }
+  btn.disabled = true;
+  btn.querySelector('span.label').textContent = 'Activando…';
+  try {
+    const permiso = await Notification.requestPermission();
+    if (permiso !== 'granted'){
+      btn.disabled = false;
+      btn.querySelector('span.label').textContent = 'Notificarme pedidos nuevos';
+      return;
+    }
+
+    if (!pushConfigurado()){
+      // Sin Firebase configurado todavía se activa igual el aviso local (capa 1); el push real
+      // (capa 2, panel cerrado) va a funcionar cuando se complete FIREBASE_CONFIG acá y en
+      // firebase-messaging-sw.js.
+      btn.classList.add('on');
+      btn.querySelector('span.label').textContent = 'Avisos activados (local)';
+      localStorage.setItem('turquitos-push-local', '1');
+      btn.disabled = false;
+      return;
+    }
+
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    pushMessaging = firebase.messaging();
+
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const token = await pushMessaging.getToken({ vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: reg });
+    if (!token) throw new Error('Firebase no devolvió un token.');
+
+    const { data: s } = await sb.auth.getSession();
+    const userId = s.session && s.session.user ? s.session.user.id : null;
+    const { error } = await sb.from('push_tokens').upsert({ token, user_id: userId, ultimo_uso: new Date().toISOString() });
+    if (error) console.error('No se pudo guardar el token de push (¿falta correr supabase_add_push_tokens.sql?):', error.message);
+
+    pushMessaging.onMessage((payload) => {
+      const { title, body } = payload.notification || {};
+      mostrarPushToast(title || 'Los Turquitos', body);
+    });
+
+    btn.classList.add('on');
+    btn.querySelector('span.label').textContent = 'Notificaciones activadas';
+    localStorage.setItem('turquitos-push-local', '1');
+  } catch (e){
+    console.error('No se pudieron activar las notificaciones:', e);
+    alert('No se pudieron activar las notificaciones: ' + e.message);
+    btn.querySelector('span.label').textContent = 'Notificarme pedidos nuevos';
+  }
+  btn.disabled = false;
+}
+
+function initPushUI(){
+  const activo = localStorage.getItem('turquitos-push-local') === '1' && window.Notification && Notification.permission === 'granted';
+  if (activo){
+    const btn = document.getElementById('push-btn');
+    btn.classList.add('on');
+    btn.querySelector('span.label').textContent = pushConfigurado() ? 'Notificaciones activadas' : 'Avisos activados (local)';
+  }
 }
 
 // ---------- Presupuestos ----------

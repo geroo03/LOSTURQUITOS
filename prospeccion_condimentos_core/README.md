@@ -155,3 +155,22 @@ En Supabase → *Authentication → URL Configuration*, poner **Site URL = https
 - **Clientes (panel):** lista de cuentas registradas con cantidad de pedidos, total comprado y último pedido (sirve para definir descuentos por volumen).
 - **Planilla de precios (panel → Productos):** "Descargar planilla" baja todos los productos en Excel; se editan precio / precio_oferta / sin_stock / activo (filas sin id = productos nuevos) y se suben con "Importar precios", que muestra un resumen de cambios antes de aplicar.
 - **Pedido ⇄ presupuesto (panel):** botón "Armar presupuesto" en cada pedido, y "Pasar a pedido" en cada presupuesto (crea el pedido confirmado y deja el presupuesto como aceptado).
+
+### Notificaciones push en el panel (Firebase Cloud Messaging)
+
+Avisa a Karim de un pedido nuevo. Dos capas, independientes:
+
+1. **Aviso local (ya anda, sin configurar nada):** mientras el panel está abierto en el navegador, un pedido nuevo muestra un cartelito y suena. Usa el canal realtime que ya existía; no depende de Firebase.
+2. **Push real (panel cerrado, celular):** requiere completar los datos del proyecto de Firebase en dos archivos, con los MISMOS valores en los dos:
+   - `tienda/panel_tienda.html` → buscar `FIREBASE_CONFIG` y `FIREBASE_VAPID_KEY`.
+   - `tienda/firebase-messaging-sw.js` → el mismo `firebaseConfig`.
+
+   Después, copiar los dos archivos a `deploy/tienda/` (como siempre) y subir a Netlify.
+
+**Dónde sacar los datos, en Firebase Console** (con el proyecto ya creado):
+- *Configuración del proyecto* (⚙️) → pestaña **Tus apps** → ícono `</>` (Web) → registrar una app (no hace falta Hosting) → copiar el objeto `firebaseConfig` → son los 6 valores de `FIREBASE_CONFIG`. No son secretos, van en el código igual que la clave pública de Supabase.
+- *Configuración del proyecto* → pestaña **Cloud Messaging** → sección "Configuración web" → **Generar par de claves** → ese valor es `FIREBASE_VAPID_KEY`.
+
+Con eso completado, Karim toca **"🔔 Notificarme pedidos nuevos"** en el panel (botón arriba a la derecha), acepta el permiso de notificaciones del navegador (en el celular, con Chrome), y queda registrado. Correr antes `supabase_add_push_tokens.sql` (una sola vez) para que el token se pueda guardar.
+
+**Lo que falta para que el push llegue solo (no armado todavía):** hoy nada dispara el envío automático cuando entra un pedido. Para eso hace falta una pieza más (por ejemplo una Edge Function de Supabase que escuche los pedidos nuevos y llame a la API de Firebase) — se puede sumar después. Mientras tanto, se puede probar el push manualmente desde Firebase Console → Messaging → "Enviar mensaje de prueba", pegando el token (queda guardado en la tabla `push_tokens`).
