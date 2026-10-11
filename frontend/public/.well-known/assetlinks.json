@@ -1,9 +1,11 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.losturquitos.karim",
+      "package_name": "com.losturquitos.app",
       "sha256_cert_fingerprints": [
         "9E:DE:D5:74:93:7E:47:B4:D0:97:49:CA:F4:8A:BB:FA:23:83:C9:1D:E2:E4:49:BD:54:7E:E8:9E:22:33:CA:EB"
       ]
