@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f4e44">
 <title>Los Turquitos — Panel de Administración</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="manifest" href="/manifest-admin.webmanifest">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -367,6 +371,7 @@
     <span class="live-dot">En vivo</span>
     <span class="sub">Panel de Karim — pedidos, productos y configuración del catálogo</span>
     <div class="spacer"></div>
+    <a class="btn" href="/" title="Abre el catálogo público">🛒 Ver tienda</a>
     <button class="btn" id="push-btn" onclick="activarNotificacionesPush()" title="Te avisa en este navegador cuando entra un pedido nuevo">
       <span class="dot"></span>🔔 <span class="label">Notificarme pedidos nuevos</span>
     </button>

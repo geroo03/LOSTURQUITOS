@@ -6,3 +6,6 @@ desktop.ini
 # Datos de negocio (leads scrapeados: nombre/dirección/teléfono de comercios) — no van al repo público
 prospeccion_condimentos_core/scraping/leads_karim.csv
 prospeccion_condimentos_core/scraping/LEADS_SEGMENTADOS/
+
+# App Android privada de Karim: la clave de firma y el build no van al repo público
+android-karim/
