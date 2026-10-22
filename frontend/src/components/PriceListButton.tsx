@@ -1,21 +1,23 @@
 import { useState } from 'react';
-import { Category, Product } from '../types';
 import { downloadPriceList } from '../lib/priceList';
+import { loadStore } from '../lib/supabase';
 
 interface Props {
-  products: Product[];
-  categories: Category[];
   className?: string;
   label?: string;
 }
 
-/** Botón que genera y descarga la lista de precios en PDF con los precios actuales del catálogo. */
-export function PriceListButton({ products, categories, className = '', label = 'Descargar lista de precios (PDF)' }: Props) {
+/**
+ * Botón que genera y descarga la lista de precios en PDF. Los precios se piden a Supabase en el momento:
+ * el catálogo puede llevar días abierto en el celular y su copia en memoria tener precios viejos.
+ */
+export function PriceListButton({ className = '', label = 'Descargar lista de precios (PDF)' }: Props) {
   const [state, setState] = useState<'idle' | 'busy' | 'error'>('idle');
 
   const run = async () => {
     setState('busy');
     try {
+      const { products, categories } = await loadStore();
       await downloadPriceList(products, categories);
       setState('idle');
     } catch (e) {

@@ -642,6 +642,14 @@ async function showApp(){
   subscribeRealtimePedidos();
   subscribeRealtimeProductos();
   subscribeRealtimeCategorias();
+  // En el celular el panel queda abierto en segundo plano y el realtime se corta: al volver se recarga todo.
+  if (!window.__recargaAlVolver){
+    window.__recargaAlVolver = true;
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible' || document.getElementById('app').style.display === 'none') return;
+      loadCategorias().then(() => Promise.all([loadPedidos(), loadProductos(), loadConfiguracion(), loadPresupuestos()]));
+    });
+  }
 }
 
 function showTab(tab){
@@ -2033,6 +2041,8 @@ function precioMinoristaDe(p){
 
 // Lista de precios minorista en PDF: mismo formato que la lista mayorista del catálogo (frontend/src/lib/priceList.ts).
 async function generarListaMinoristaPDF(){
+  // Precios recién pedidos a Supabase: si el panel quedó abierto en segundo plano, el realtime pudo cortarse.
+  await Promise.all([loadProductos(), loadConfiguracion()]);
   const activos = productos.filter(p => p.activo);
   const faltan = activos.filter(p => precioMinoristaDe(p) == null);
   if (faltan.length){

@@ -104,8 +104,6 @@ export function CatalogView({
             Catálogo de condimentos y almacén
           </h1>
           <PriceListButton
-            products={products}
-            categories={categories}
             className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#01372e] text-white text-xs font-semibold hover:bg-[#1f4e44] disabled:opacity-60 transition-colors shadow-xs"
           />
         </div>

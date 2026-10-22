@@ -42,6 +42,19 @@ export default function App() {
   }, []);
   useEffect(fetchStore, [fetchStore]);
 
+  // Al volver a la pestaña o a la app se recargan los precios sin mostrar "Cargando": en el celular el catálogo
+  // puede quedar abierto días y, si no, seguiría mostrando precios y ofertas viejos.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return;
+      loadStore()
+        .then((data) => setLoad({ status: 'ready', data }))
+        .catch(() => {}); // sin internet: se queda con lo que ya tenía
+    };
+    document.addEventListener('visibilitychange', refresh);
+    return () => document.removeEventListener('visibilitychange', refresh);
+  }, []);
+
   const data = load.status === 'ready' ? load.data : EMPTY;
   const cart = useCart(data.products);
 

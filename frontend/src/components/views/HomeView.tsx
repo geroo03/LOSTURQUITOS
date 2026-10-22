@@ -212,8 +212,6 @@ export function HomeView({ products, categories, config, onSelectProduct, onAddT
             Hablá directo con Karim por WhatsApp, o descargá la lista de precios completa.
           </p>
           <PriceListButton
-            products={products}
-            categories={categories}
             className="mt-2 mr-3 inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#01372e] hover:underline disabled:opacity-60"
           />
           <a
