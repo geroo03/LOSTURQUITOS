@@ -43,13 +43,13 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 text-[#01372e] hover:text-[#1f4e44] text-xs sm:text-sm font-semibold transition-colors py-1"
+          className="inline-flex items-center gap-1.5 text-norte hover:text-norte-claro text-xs sm:text-sm font-semibold transition-colors py-1"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           <span>Volver al catálogo</span>
         </button>
-        <div className="flex items-center gap-1.5 bg-[#f4e7c8] px-3 py-1 rounded-full text-[#404846] font-mono text-[10px] sm:text-xs tracking-wider uppercase border border-[#efe1c2]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#842401]" />
+        <div className="flex items-center gap-1.5 bg-marfil-200 px-3 py-1 rounded-full text-gris font-mono text-[10px] sm:text-xs tracking-wider uppercase border border-marfil-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-mostaza-oscura" />
           <span>{product.categoryLabel}</span>
         </div>
       </div>
@@ -57,8 +57,8 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Galería */}
         <div className="lg:col-span-6 flex flex-col gap-3">
-          <div className="relative w-full rounded-2xl bg-[#faedcd] p-3 shadow-sm border border-[#efe1c2]">
-            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-[#efe1c2] shadow-inner">
+          <div className="relative w-full rounded-2xl bg-marfil-200 p-3 shadow-sm border border-marfil-300">
+            <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-marfil-300 shadow-inner">
               <ProductImage src={product.images[imageIdx] ?? product.images[0]} alt={product.title} className="w-full h-full" />
             </div>
             {product.images.length > 1 && (
@@ -70,7 +70,7 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                     onClick={() => setImageIdx(i)}
                     aria-label={`Ver foto ${i + 1}`}
                     className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
-                      imageIdx === i ? 'border-[#01372e] ring-2 ring-[#01372e]/30' : 'border-transparent opacity-70 hover:opacity-100'
+                      imageIdx === i ? 'border-norte ring-2 ring-norte/30' : 'border-transparent opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img src={url} alt="" className="w-full h-full object-cover" />
@@ -83,32 +83,32 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
 
         {/* Compra */}
         <div className="lg:col-span-6 flex flex-col gap-4 sm:gap-5">
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#efe1c2] shadow-sm flex flex-col gap-4">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-marfil-300 shadow-sm flex flex-col gap-4">
             <div>
-              <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-[#01372e] leading-tight">{product.title}</h1>
+              <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-norte leading-tight">{product.title}</h1>
               {product.description && (
-                <p className="text-xs sm:text-sm text-[#404846] mt-2 leading-relaxed whitespace-pre-line">{product.description}</p>
+                <p className="text-xs sm:text-sm text-gris mt-2 leading-relaxed whitespace-pre-line">{product.description}</p>
               )}
             </div>
 
-            <div className="flex items-baseline justify-between bg-[#fff8f0] p-3.5 sm:p-4 rounded-xl border border-[#efe1c2]">
+            <div className="flex items-baseline justify-between bg-marfil p-3.5 sm:p-4 rounded-xl border border-marfil-300">
               <div>
-                <span className="font-mono text-[10px] text-[#707976] uppercase tracking-wider block">Precio</span>
+                <span className="font-mono text-[10px] text-gris-claro uppercase tracking-wider block">Precio</span>
                 <div className="flex items-baseline gap-1 mt-0.5">
-                  <PriceTag variant={variant} className="font-mono text-2xl sm:text-3xl font-bold text-[#01372e]" />
+                  <PriceTag variant={variant} className="font-mono text-2xl sm:text-3xl font-bold text-norte" />
                   {variant.listPrice && (
-                    <span className="font-mono text-[10px] font-bold uppercase bg-[#ba1a1a] text-white px-2 py-0.5 rounded">
+                    <span className="font-mono text-[10px] font-bold uppercase bg-oferta text-white px-2 py-0.5 rounded">
                       -{Math.round((1 - variant.price / variant.listPrice) * 100)}%
                     </span>
                   )}
-                  <span className="font-mono text-[11px] text-[#49645c] font-bold">por {unitLabel(variant.unit)}</span>
+                  <span className="font-mono text-[11px] text-salvia font-bold">por {unitLabel(variant.unit)}</span>
                 </div>
               </div>
             </div>
 
             {product.variants.length > 1 && (
               <div className="space-y-2">
-                <span className="font-semibold text-xs sm:text-sm text-[#01372e] block">Elegí la presentación:</span>
+                <span className="font-semibold text-xs sm:text-sm text-norte block">Elegí la presentación:</span>
                 <div className="grid grid-cols-3 gap-2">
                   {product.variants.map((v) => (
                     <button
@@ -117,13 +117,13 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                       onClick={() => setUnit(v.unit)}
                       className={`p-2.5 sm:p-3 rounded-xl flex flex-col items-center justify-center transition-all border ${
                         v.unit === unit
-                          ? 'bg-[#01372e] text-white border-[#01372e] shadow-sm font-bold'
-                          : 'bg-[#fff3d7] text-[#211b08] hover:bg-[#faedcd] border-[#efe1c2]'
+                          ? 'bg-norte text-white border-norte shadow-sm font-bold'
+                          : 'bg-marfil-100 text-tinta hover:bg-marfil-200 border-marfil-300'
                       }`}
                     >
                       <span className={`font-mono text-sm sm:text-base font-bold ${v.soldOut ? 'line-through opacity-60' : ''}`}>{v.unit}</span>
-                      {v.soldOut && <span className="font-mono text-[9px] uppercase font-bold text-[#ba1a1a] mt-0.5">Sin stock</span>}
-                      <span className={`font-mono text-[10px] mt-1 ${v.unit === unit ? 'text-white/80' : 'text-[#404846]'}`}>
+                      {v.soldOut && <span className="font-mono text-[9px] uppercase font-bold text-oferta mt-0.5">Sin stock</span>}
+                      <span className={`font-mono text-[10px] mt-1 ${v.unit === unit ? 'text-white/80' : 'text-gris'}`}>
                         {money(v.price)}
                         {v.listPrice && <s className="ml-1 opacity-60">{money(v.listPrice)}</s>}
                       </span>
@@ -134,9 +134,9 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
             )}
 
             {variant.soldOut ? (
-              <div className="bg-[#faedcd]/60 p-4 rounded-xl border border-[#efe1c2] flex flex-col gap-3">
-                <p className="text-sm text-[#404846]">
-                  <strong className="text-[#ba1a1a]">Sin stock</strong> en esta presentación por el momento.
+              <div className="bg-marfil-200/60 p-4 rounded-xl border border-marfil-300 flex flex-col gap-3">
+                <p className="text-sm text-gris">
+                  <strong className="text-oferta">Sin stock</strong> en esta presentación por el momento.
                 </p>
                 <a
                   href={waLink(`Hola Karim, avisame cuando vuelva ${product.title} (${variant.unit})`)}
@@ -150,23 +150,23 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
               </div>
             ) : (
               <>
-            <div className="bg-[#faedcd]/60 p-3.5 sm:p-4 rounded-xl border border-[#efe1c2] flex items-center justify-between gap-3">
+            <div className="bg-marfil-200/60 p-3.5 sm:p-4 rounded-xl border border-marfil-300 flex items-center justify-between gap-3">
               <div>
-                <span className="text-xs text-[#404846] block font-medium">Cantidad:</span>
+                <span className="text-xs text-gris block font-medium">Cantidad:</span>
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <button
                     type="button"
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-9 h-9 rounded-lg bg-white text-[#01372e] flex items-center justify-center shadow-xs font-bold text-lg hover:bg-[#fff8f0] active:scale-95"
+                    className="w-9 h-9 rounded-lg bg-white text-norte flex items-center justify-center shadow-xs font-bold text-lg hover:bg-marfil active:scale-95"
                     aria-label="Restar cantidad"
                   >
                     −
                   </button>
-                  <span className="w-9 text-center font-mono text-lg font-bold text-[#01372e]">{quantity}</span>
+                  <span className="w-9 text-center font-mono text-lg font-bold text-norte">{quantity}</span>
                   <button
                     type="button"
                     onClick={() => setQuantity((q) => Math.min(999, q + 1))}
-                    className="w-9 h-9 rounded-lg bg-[#01372e] text-white flex items-center justify-center shadow-xs font-bold text-lg hover:bg-[#1f4e44] active:scale-95"
+                    className="w-9 h-9 rounded-lg bg-norte text-white flex items-center justify-center shadow-xs font-bold text-lg hover:bg-norte-claro active:scale-95"
                     aria-label="Sumar cantidad"
                   >
                     +
@@ -174,9 +174,9 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-xs text-[#404846] block font-medium">Subtotal:</span>
-                <span className="font-mono text-xl sm:text-2xl font-bold text-[#01372e] block">{money(subtotal)}</span>
-                <span className="font-mono text-[10px] sm:text-xs text-[#49645c] font-bold block uppercase">
+                <span className="text-xs text-gris block font-medium">Subtotal:</span>
+                <span className="font-mono text-xl sm:text-2xl font-bold text-norte block">{money(subtotal)}</span>
+                <span className="font-mono text-[10px] sm:text-xs text-salvia font-bold block uppercase">
                   {quantity} × {variant.unit}
                 </span>
               </div>
@@ -185,7 +185,7 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
             <button
               type="button"
               onClick={() => shareProduct(product.id, product.title)}
-              className="self-start inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#01372e] hover:underline"
+              className="self-start inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-norte hover:underline"
             >
               <span className="material-symbols-outlined text-[18px]">ios_share</span>
               <span>Compartir este producto</span>
@@ -196,7 +196,7 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                 type="button"
                 onClick={handleAdd}
                 className={`flex-1 h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] text-white ${
-                  added ? 'bg-[#1ebe5d]' : 'bg-[#01372e] hover:bg-[#1f4e44]'
+                  added ? 'bg-[#1ebe5d]' : 'bg-norte hover:bg-norte-claro'
                 }`}
               >
                 <span className="material-symbols-outlined text-[20px]">{added ? 'check_circle' : 'shopping_bag'}</span>
@@ -219,32 +219,32 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
       </div>
 
       {related.length > 0 && (
-        <section className="mt-4 bg-white rounded-2xl p-5 sm:p-6 border border-[#efe1c2] shadow-sm">
-          <h3 className="font-serif font-bold text-lg text-[#01372e] mb-4">También te puede interesar</h3>
+        <section className="mt-4 bg-white rounded-2xl p-5 sm:p-6 border border-marfil-300 shadow-sm">
+          <h3 className="font-serif font-bold text-lg text-norte mb-4">También te puede interesar</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {related.map((rel) => (
               <div
                 key={rel.id}
-                className="bg-[#fff3d7] rounded-xl p-3 flex items-center gap-3 border border-[#efe1c2] hover:bg-[#faedcd] transition-colors"
+                className="bg-marfil-100 rounded-xl p-3 flex items-center gap-3 border border-marfil-300 hover:bg-marfil-200 transition-colors"
               >
                 <button
                   type="button"
                   onClick={() => onSelectProduct(rel)}
                   aria-label={`Ver ${rel.title}`}
-                  className="w-16 h-16 rounded-lg overflow-hidden bg-[#faedcd] shrink-0"
+                  className="w-16 h-16 rounded-lg overflow-hidden bg-marfil-200 shrink-0"
                 >
                   <ProductImage src={rel.images[0]} alt="" className="w-full h-full" />
                 </button>
                 <div className="flex-1 min-w-0">
-                  <span className="font-mono text-[9px] text-[#5d1700] uppercase font-bold block truncate">{rel.categoryLabel}</span>
+                  <span className="font-mono text-[9px] text-mostaza-oscura uppercase font-bold block truncate">{rel.categoryLabel}</span>
                   <h4
                     onClick={() => onSelectProduct(rel)}
-                    className="font-serif font-bold text-xs sm:text-sm text-[#01372e] leading-tight truncate hover:underline cursor-pointer"
+                    className="font-serif font-bold text-xs sm:text-sm text-norte leading-tight truncate hover:underline cursor-pointer"
                   >
                     {rel.title}
                   </h4>
                   <div className="flex items-center justify-between mt-1.5">
-                    <span className="font-mono text-xs font-bold text-[#01372e]">
+                    <span className="font-mono text-xs font-bold text-norte">
                       {money(rel.variants[0].price)}
                       <span className="text-[10px] font-normal"> /{rel.variants[0].unit}</span>
                     </span>
@@ -252,7 +252,7 @@ export function ProductDetailView({ product, allProducts, onBack, onSelectProduc
                       type="button"
                       onClick={() => onAddToCart(rel, rel.variants[0].unit, 1)}
                       disabled={rel.variants[0].soldOut}
-                      className="disabled:opacity-40 disabled:cursor-not-allowed px-2.5 py-1 rounded-lg bg-[#01372e] text-white text-[11px] font-semibold hover:bg-[#1f4e44] transition-colors flex items-center gap-1"
+                      className="disabled:opacity-40 disabled:cursor-not-allowed px-2.5 py-1 rounded-lg bg-norte text-white text-[11px] font-semibold hover:bg-norte-claro transition-colors flex items-center gap-1"
                     >
                       <span className="material-symbols-outlined text-[14px]">add</span>
                       <span>Sumar</span>

@@ -7,9 +7,13 @@ export const SUPABASE_URL =
 export const SUPABASE_ANON_KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_1B56mz2mbyKgQ75EEw7hqg_JgXtZHVN';
 
-/** Logo por defecto (archivo local, carga instantánea). Si Karim sube otro desde el panel, se reemplaza. */
+/** Logo de Norte Origen (archivo local, carga instantánea). Si Karim sube otro desde el panel, se usa ese. */
+export const LOCAL_LOGO = '/marca/logo-circulo.webp';
+/** El mismo logo en JPG cuadrado, para el PDF (jsPDF no lee webp). */
+export const PDF_LOGO = '/logo.jpg';
+/** Logo y fondo de la marca anterior (Los Turquitos) que siguen guardados en Supabase: se ignoran. */
 export const DEFAULT_LOGO_URL = `${SUPABASE_URL}/storage/v1/object/public/productos/config/logo-los-turquitos.jpg`;
-export const LOCAL_LOGO = '/logo.jpg';
+export const LEGACY_HERO_URL = `${SUPABASE_URL}/storage/v1/object/public/productos/config/fondo-los-turquitos.jpg`;
 
 export const DEFAULT_TAGLINE =
   'Condimentos, frutos secos, especias, aceitunas, encurtidos, repostería y semillas a precio de mayorista. Armá tu pedido acá y te lo mandamos directo por WhatsApp.';
@@ -24,7 +28,7 @@ export const productUrl = (productId: string) => `${window.location.origin}/#/pr
 /** Comparte un producto: hoja de compartir del sistema (celular / Safari en Mac) o, si no existe, WhatsApp con el link. */
 export async function shareProduct(productId: string, title: string) {
   const url = productUrl(productId);
-  const text = `Mirá ${title} en Los Turquitos`;
+  const text = `Mirá ${title} en Norte Origen`;
   if (typeof navigator.share === 'function') {
     try {
       await navigator.share({ title, text, url });

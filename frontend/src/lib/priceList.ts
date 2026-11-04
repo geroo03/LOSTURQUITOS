@@ -1,17 +1,19 @@
 import { Category, Product } from '../types';
-import { LOCAL_LOGO, WHATSAPP_DISPLAY } from './config';
+import { PDF_LOGO, WHATSAPP_DISPLAY } from './config';
 
-const TEAL: [number, number, number] = [31, 78, 68];
-const RED: [number, number, number] = [186, 26, 26];
-const GREY: [number, number, number] = [112, 121, 118];
-const INK: [number, number, number] = [33, 27, 8];
-const CREAM: [number, number, number] = [244, 231, 200];
+// Colores de Norte Origen (ver index.css): verde norte, pimentón (ofertas), gris, tinta, marfil y mostaza.
+const TEAL: [number, number, number] = [31, 59, 49];
+const RED: [number, number, number] = [163, 64, 42];
+const GREY: [number, number, number] = [115, 124, 118];
+const INK: [number, number, number] = [28, 36, 32];
+const CREAM: [number, number, number] = [244, 237, 225];
+const GOLD: [number, number, number] = [200, 155, 69];
 
 const peso = (n: number) => '$' + n.toLocaleString('es-AR');
 
 async function logoDataUrl(): Promise<string | null> {
   try {
-    const blob = await (await fetch(LOCAL_LOGO)).blob();
+    const blob = await (await fetch(PDF_LOGO)).blob();
     return await new Promise((resolve, reject) => {
       const r = new FileReader();
       r.onloadend = () => resolve(r.result as string);
@@ -59,7 +61,7 @@ export async function downloadPriceList(products: Product[], categories: Categor
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(22);
   doc.setTextColor(...TEAL);
-  doc.text('Los Turquitos', titleX, 20);
+  doc.text('Norte Origen', titleX, 20);
   doc.setFontSize(11);
   doc.setTextColor(...INK);
   doc.text('Lista de precios mayorista', titleX, 27);
@@ -67,7 +69,12 @@ export async function downloadPriceList(products: Product[], categories: Categor
   doc.setFontSize(9);
   doc.setTextColor(...GREY);
   doc.text(`Actualizada al ${new Date().toLocaleDateString('es-AR')}`, W - M, 20, { align: 'right' });
-  y = 38;
+  doc.text('Especias · Condimentos · Almacén', W - M, 27, { align: 'right' });
+  // Línea dorada bajo el encabezado, como en el logo
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.6);
+  doc.line(M, 33, W - M, 33);
+  y = 40;
 
   for (const cat of categories) {
     const inCat = products.filter((p) => p.categoryId === cat.id);
@@ -143,5 +150,5 @@ export async function downloadPriceList(products: Product[], categories: Categor
   }
 
   footer();
-  doc.save('lista-de-precios-los-turquitos.pdf');
+  doc.save('lista-de-precios-norte-origen.pdf');
 }

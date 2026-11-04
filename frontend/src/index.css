@@ -1,22 +1,58 @@
 @import "tailwindcss";
 
+/* Identidad Norte Origen: verde norte (principal), marfil (fondos claros y texto sobre verde),
+   mostaza (dorados: bordes, líneas, íconos) y oliva (detalles naturales). Los tonos intermedios salen de esos cuatro. */
 @theme {
-  --font-serif: 'Domine', Georgia, serif;
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Cinzel', 'Playfair Display', Georgia, serif; /* la marca escrita, como en el logo */
+  --font-serif: 'Playfair Display', Georgia, serif; /* títulos */
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* precios y etiquetas */
+
+  --color-norte: #1f3b31;
+  --color-norte-claro: #2c5144;
+  --color-norte-medio: #3a6152;
+  --color-norte-hondo: #142a22;
+
+  --color-marfil: #f4ede1;
+  --color-marfil-100: #efe7d8;
+  --color-marfil-200: #e8ddc9;
+  --color-marfil-300: #dfd2ba;
+  --color-marfil-400: #cbbfa6;
+
+  --color-mostaza: #c89b45;
+  --color-mostaza-oscura: #85631f; /* mostaza legible sobre fondos claros */
+
+  --color-oliva: #7a8f3b;
+  --color-oliva-oscura: #4e5e22;
+  --color-oliva-suave: #dfe5c6;
+
+  --color-tinta: #1c2420;
+  --color-gris: #4a554f;
+  --color-gris-claro: #737c76;
+  --color-salvia: #4f6a5c;
+  --color-salvia-clara: #b9c4ae;
+
+  --color-oferta: #a3402a; /* rojo pimentón para ofertas */
+  --color-oferta-oscura: #7e2e1c;
+  --color-oferta-suave: #f3ddd3;
 }
 
 @layer base {
   body {
     font-family: var(--font-sans);
-    background-color: #fff8f0;
-    color: #211b08;
+    background-color: var(--color-marfil);
+    color: var(--color-tinta);
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
   }
 
-  h1, h2, h3, .font-display {
+  h1, h2, h3 {
     font-family: var(--font-serif);
+  }
+
+  /* Precios y contadores alineados (Montserrat con números de ancho fijo) */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 }
 

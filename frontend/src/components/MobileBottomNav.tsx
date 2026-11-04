@@ -39,15 +39,15 @@ export function MobileBottomNav({ activeView, offersActive, onNavigate, onOpenFe
   const isActive = (t: Tab) => t === activeTab;
   const tab = (active: boolean) =>
     `relative z-10 flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-      active ? 'text-[#01372e] font-bold' : 'text-[#404846] hover:text-[#01372e]'
+      active ? 'text-marfil font-bold' : 'text-marfil/70 hover:text-marfil'
     }`;
-  const icon = (active: boolean) => `material-symbols-outlined text-[22px] ${active ? 'animate-drop-icon' : ''}`;
+  const icon = (active: boolean) => `material-symbols-outlined text-[22px] ${active ? 'animate-drop-icon text-norte' : ''}`; // sobre la gota mostaza
   const fill = (active: boolean) => ({ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" });
 
   return (
     <nav
       aria-label="Navegación inferior"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#fff3d7]/95 backdrop-blur-xl border-t border-[#efe1c2] shadow-[0_-2px_12px_rgba(33,27,8,0.06)] pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-norte/97 backdrop-blur-xl border-t border-mostaza/40 shadow-[0_-2px_16px_rgba(0,0,0,0.25)] pb-[env(safe-area-inset-bottom)]"
     >
       <div className="relative flex justify-around items-center h-16 px-1">
         {/* Gota: se desliza hasta la pestaña activa, se estira en el viaje y deja una onda al llegar */}
@@ -62,11 +62,11 @@ export function MobileBottomNav({ activeView, offersActive, onNavigate, onOpenFe
             {/* key = pestaña: al cambiar se remonta la gota y arranca de nuevo la animación */}
             <span
               key={`drop-${idx}`}
-              className={`absolute inset-0 rounded-full bg-[#c8e6dd] shadow-[inset_0_-2px_4px_rgba(1,55,46,0.12),inset_0_2px_3px_rgba(255,255,255,0.7)] ${
+              className={`absolute inset-0 rounded-full bg-mostaza shadow-[inset_0_-2px_4px_rgba(0,0,0,0.15),inset_0_2px_3px_rgba(255,255,255,0.35)] ${
                 idx < 0 ? '' : cameFromNowhere ? 'animate-drop-in' : 'animate-drop-travel'
               }`}
             />
-            {idx >= 0 && <span key={`ripple-${idx}`} className="absolute inset-0 rounded-full border-2 border-[#01372e]/35 animate-drop-ripple" />}
+            {idx >= 0 && <span key={`ripple-${idx}`} className="absolute inset-0 rounded-full border-2 border-mostaza/50 animate-drop-ripple" />}
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export function MobileBottomNav({ activeView, offersActive, onNavigate, onOpenFe
         </button>
 
         <button type="button" onClick={onOpenFeatured} className={tab(isActive('ofertas'))} aria-current={isActive('ofertas') ? 'page' : undefined}>
-          <span className={`${icon(isActive('ofertas'))} text-[#842401]`} style={fill(isActive('ofertas'))}>local_fire_department</span>
+          <span className={`${icon(isActive('ofertas'))} ${isActive('ofertas') ? '' : 'text-mostaza'}`} style={fill(isActive('ofertas'))}>local_fire_department</span>
           <span className="text-[11px] leading-tight mt-1">Ofertas</span>
         </button>
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { CartItem, CategoryFilter, LastOrderInfo, OrderRow, Product, Route } from './types';
-import { DEFAULT_LOGO_URL, LOCAL_LOGO, waLink } from './lib/config';
+import { DEFAULT_LOGO_URL, LEGACY_HERO_URL, LOCAL_LOGO, waLink } from './lib/config';
 import { StoreData, loadStore } from './lib/supabase';
 import { useCart } from './lib/useCart';
 import { LastOrder, loadLastOrder, saveLastOrder } from './lib/lastOrder';
@@ -61,6 +61,8 @@ export default function App() {
   // El logo local carga al instante; solo se reemplaza si Karim subió otro distinto al de siempre desde el panel.
   const logoUrl =
     data.config.logoUrl && data.config.logoUrl !== DEFAULT_LOGO_URL ? data.config.logoUrl : LOCAL_LOGO;
+  // El fondo de portada de Los Turquitos sigue guardado en Supabase: con la marca nueva no se muestra.
+  const storeConfig = data.config.heroImageUrl === LEGACY_HERO_URL ? { ...data.config, heroImageUrl: null } : data.config;
 
   useEffect(() => {
     if (!toast) return;
@@ -180,11 +182,11 @@ export default function App() {
     content = auth.user ? (
       <AccountView auth={auth} onRepeatOrder={repeatOrder} onGoToCatalog={() => goToCatalog()} />
     ) : (
-      <div className="py-24 text-center text-sm text-[#404846]">Un momento…</div>
+      <div className="py-24 text-center text-sm text-gris">Un momento…</div>
     );
   } else if (load.status === 'loading') {
     content = (
-      <div className="py-32 flex flex-col items-center gap-3 text-[#49645c]">
+      <div className="py-32 flex flex-col items-center gap-3 text-salvia">
         <span className="material-symbols-outlined text-[36px] animate-pulse">storefront</span>
         <span className="font-mono text-xs uppercase tracking-wider">Cargando catálogo…</span>
       </div>
@@ -192,11 +194,11 @@ export default function App() {
   } else if (load.status === 'error') {
     content = (
       <div className="py-24 flex flex-col items-center gap-3 text-center">
-        <span className="material-symbols-outlined text-[40px] text-[#842401]">cloud_off</span>
-        <h2 className="font-serif text-lg font-bold text-[#01372e]">No pudimos cargar el catálogo</h2>
-        <p className="text-xs text-[#404846] max-w-sm">{load.message}</p>
+        <span className="material-symbols-outlined text-[40px] text-mostaza-oscura">cloud_off</span>
+        <h2 className="font-serif text-lg font-bold text-norte">No pudimos cargar el catálogo</h2>
+        <p className="text-xs text-gris max-w-sm">{load.message}</p>
         <div className="flex gap-2 mt-2">
-          <button type="button" onClick={fetchStore} className="px-4 py-2 rounded-xl bg-[#01372e] text-white text-xs font-semibold">
+          <button type="button" onClick={fetchStore} className="px-4 py-2 rounded-xl bg-norte text-white text-xs font-semibold">
             Reintentar
           </button>
           <a href={waLink('Hola Karim, no me carga el catálogo')} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-[#1ebe5d] text-white text-xs font-semibold">
@@ -210,12 +212,14 @@ export default function App() {
       <HomeView
         products={data.products}
         categories={data.categories}
-        config={data.config}
+        config={storeConfig}
         onSelectProduct={openProduct}
         onAddToCart={addToCart}
         onGoToCatalog={goToCatalog}
         lastOrder={lastOrderInfo}
         onRepeatLastOrder={repeatLastOrder}
+        onOpenHowToBuy={() => setHowToOpen(true)}
+        onGoToCart={() => navigate({ view: 'carrito' })}
       />
     );
   } else if (route.view === 'catalogo') {
@@ -244,9 +248,9 @@ export default function App() {
       />
     ) : (
       <div className="py-24 flex flex-col items-center gap-3 text-center">
-        <span className="material-symbols-outlined text-[40px] text-[#707976]">search_off</span>
-        <h2 className="font-serif text-lg font-bold text-[#01372e]">No encontramos ese producto</h2>
-        <button type="button" onClick={() => goToCatalog()} className="mt-2 px-4 py-2 rounded-xl bg-[#01372e] text-white text-xs font-semibold">
+        <span className="material-symbols-outlined text-[40px] text-gris-claro">search_off</span>
+        <h2 className="font-serif text-lg font-bold text-norte">No encontramos ese producto</h2>
+        <button type="button" onClick={() => goToCatalog()} className="mt-2 px-4 py-2 rounded-xl bg-norte text-white text-xs font-semibold">
           Ir al catálogo
         </button>
       </div>
@@ -272,7 +276,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fff8f0] flex flex-col font-sans selection:bg-[#01372e] selection:text-white">
+    <div className="min-h-screen bg-marfil flex flex-col font-sans selection:bg-norte selection:text-white">
       <Header
         activeView={route.view}
         offersActive={offersActive}
@@ -299,7 +303,7 @@ export default function App() {
 
       {/* Botón flotante de WhatsApp (tablet y PC) */}
       <a
-        href={waLink('Hola Karim, quiero hacer un pedido en Los Turquitos')}
+        href={waLink('Hola Karim, quiero hacer un pedido en Norte Origen')}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Escribinos por WhatsApp"
@@ -317,7 +321,7 @@ export default function App() {
       {toast && (
         <div
           role="status"
-          className="fixed top-20 md:top-44 left-1/2 -translate-x-1/2 z-[70] bg-[#01372e] text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-xs font-mono border border-[#a0d0c3] animate-fade-in max-w-[92vw]"
+          className="fixed top-20 md:top-44 left-1/2 -translate-x-1/2 z-[70] bg-norte text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-xs font-mono border border-mostaza animate-fade-in max-w-[92vw]"
         >
           <span className="material-symbols-outlined text-[#1ebe5d] text-[18px]">check_circle</span>
           <span className="truncate">{toast}</span>

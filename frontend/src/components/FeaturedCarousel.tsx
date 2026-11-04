@@ -127,14 +127,14 @@ export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
     <section className="flex flex-col gap-3" aria-roledescription="carrusel" aria-label="Ofertas y destacados">
       <div className="flex items-center justify-between px-1 gap-3">
         <div className="flex flex-col">
-          <h2 className="font-serif text-xl sm:text-2xl text-[#01372e] font-bold">Ofertas y destacados</h2>
-          <span className="text-xs text-[#404846]">Lo que Karim recomienda esta semana</span>
+          <h2 className="font-serif text-xl sm:text-2xl text-norte font-bold">Ofertas y destacados</h2>
+          <span className="text-xs text-gris">Lo que Karim recomienda esta semana</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => onSeeAll('destacados')}
-            className="hidden sm:inline text-xs sm:text-sm font-bold text-[#49645c] hover:text-[#01372e] transition-colors mr-1"
+            className="hidden sm:inline text-xs sm:text-sm font-bold text-salvia hover:text-norte transition-colors mr-1"
           >
             Ver todos →
           </button>
@@ -142,7 +142,7 @@ export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
             type="button"
             onClick={togglePlaying}
             aria-label={playing ? 'Pausar carrusel' : 'Reproducir carrusel'}
-            className="w-9 h-9 rounded-full bg-[#f4e7c8] hover:bg-[#efe1c2] text-[#01372e] flex items-center justify-center active:scale-95 transition-all"
+            className="w-9 h-9 rounded-full bg-marfil-200 hover:bg-marfil-300 text-norte flex items-center justify-center active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-[20px]">{playing ? 'pause' : 'play_arrow'}</span>
           </button>
@@ -152,7 +152,7 @@ export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
               type="button"
               onClick={() => scrollByPage(d === 'next' ? 1 : -1)}
               aria-label={d === 'next' ? 'Siguiente' : 'Anterior'}
-              className="w-9 h-9 rounded-full bg-[#f4e7c8] hover:bg-[#efe1c2] text-[#01372e] flex items-center justify-center active:scale-95 transition-all"
+              className="w-9 h-9 rounded-full bg-marfil-200 hover:bg-marfil-300 text-norte flex items-center justify-center active:scale-95 transition-all"
             >
               <span className="material-symbols-outlined text-[20px]">{d === 'next' ? 'chevron_right' : 'chevron_left'}</span>
             </button>
@@ -185,41 +185,41 @@ export function FeaturedCarousel({ products, onOpen, onAdd, onSeeAll }: Props) {
               key={`${p.id}-${isCopy ? 'b' : 'a'}`}
               inert={isCopy}
               aria-hidden={isCopy || undefined}
-              className="shrink-0 w-[62%] sm:w-[36%] md:w-[28%] lg:w-[22%] bg-white rounded-2xl p-3 border border-[#efe1c2] shadow-sm flex flex-col gap-2 group hover:shadow-md transition-shadow"
+              className="shrink-0 w-[62%] sm:w-[36%] md:w-[28%] lg:w-[22%] bg-white rounded-2xl p-3 border border-marfil-300 shadow-sm flex flex-col gap-2 group hover:shadow-md transition-shadow"
             >
               <button
                 type="button"
                 onClick={() => onOpen(p)}
                 aria-label={`Ver ${p.title}`}
-                className="relative w-full aspect-square rounded-xl overflow-hidden bg-[#faedcd] block"
+                className="relative w-full aspect-square rounded-xl overflow-hidden bg-marfil-200 block"
               >
                 <ProductImage src={p.images[0]} alt="" className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
                 <span
                   className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-white font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${
-                    p.onSale ? 'bg-[#ba1a1a]' : 'bg-[#842401]'
+                    p.onSale ? 'bg-oferta' : 'bg-mostaza-oscura'
                   }`}
                 >
                   {p.onSale ? 'Oferta' : 'Destacado'}
                 </span>
               </button>
               <div className="min-w-0">
-                <span className="font-mono text-[9px] sm:text-[10px] text-[#5d1700] font-bold uppercase block truncate">{p.categoryLabel}</span>
+                <span className="font-mono text-[9px] sm:text-[10px] text-mostaza-oscura font-bold uppercase block truncate">{p.categoryLabel}</span>
                 <h3
                   onClick={() => onOpen(p)}
-                  className="font-serif text-xs sm:text-sm font-bold text-[#01372e] leading-snug line-clamp-2 min-h-[34px] cursor-pointer hover:underline"
+                  className="font-serif text-xs sm:text-sm font-bold text-norte leading-snug line-clamp-2 min-h-[34px] cursor-pointer hover:underline"
                 >
                   {p.title}
                 </h3>
               </div>
               <div className="flex items-baseline justify-between mt-auto">
-                <PriceTag variant={v} className="font-mono text-sm sm:text-base font-bold text-[#01372e]" />
-                <span className="font-mono text-[10px] text-[#49645c] font-semibold">por {unitLabel(v.unit)}</span>
+                <PriceTag variant={v} className="font-mono text-sm sm:text-base font-bold text-norte" />
+                <span className="font-mono text-[10px] text-salvia font-semibold">por {unitLabel(v.unit)}</span>
               </div>
               <button
                 type="button"
                 onClick={() => flash(p)}
                 className={`w-full py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 transition-all text-white ${
-                  added === p.id ? 'bg-[#1ebe5d]' : 'bg-[#01372e] hover:bg-[#1f4e44]'
+                  added === p.id ? 'bg-[#1ebe5d]' : 'bg-norte hover:bg-norte-claro'
                 }`}
               >
                 <span className="material-symbols-outlined text-[16px]">{added === p.id ? 'check' : 'add_shopping_cart'}</span>

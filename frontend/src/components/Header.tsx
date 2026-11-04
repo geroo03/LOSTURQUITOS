@@ -21,7 +21,7 @@ interface HeaderProps {
 // El fondo del botón activo lo pone la "gota" que se desliza (ver DropPill), no el botón.
 const navBtn = (active: boolean) =>
   `relative z-10 px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-300 ${
-    active ? 'text-white font-bold' : 'text-[#404846] hover:text-[#01372e] hover:bg-[#faedcd]'
+    active ? 'text-norte font-bold' : 'text-marfil/85 hover:text-marfil hover:bg-white/10'
   }`;
 
 type NavTab = 'inicio' | 'catalogo' | 'ofertas';
@@ -61,11 +61,11 @@ function DropPill({ active, buttons }: { active: NavTab | null; buttons: React.R
     >
       <span
         key={`drop-${active}`}
-        className={`absolute inset-0 rounded-lg bg-[#1f4e44] shadow-[inset_0_-2px_4px_rgba(0,0,0,0.18),inset_0_1px_2px_rgba(255,255,255,0.18),0_2px_6px_rgba(1,55,46,0.25)] ${
+        className={`absolute inset-0 rounded-lg bg-mostaza shadow-[inset_0_-2px_4px_rgba(0,0,0,0.15),inset_0_1px_2px_rgba(255,255,255,0.35),0_2px_8px_rgba(0,0,0,0.25)] ${
           !active ? '' : cameFromNowhere ? 'animate-drop-in' : 'animate-drop-travel-soft'
         }`}
       />
-      {active && <span key={`ripple-${active}`} className="absolute inset-0 rounded-lg border-2 border-[#1f4e44]/40 animate-drop-ripple-soft" />}
+      {active && <span key={`ripple-${active}`} className="absolute inset-0 rounded-lg border-2 border-mostaza/50 animate-drop-ripple-soft" />}
     </div>
   );
 }
@@ -97,25 +97,25 @@ export function Header({
           : null;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#fff8f0]/95 backdrop-blur-md shadow-[0_2px_12px_rgba(1,55,46,0.06)] border-b border-[#faedcd]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-norte/97 backdrop-blur-md shadow-[0_2px_16px_rgba(0,0,0,0.25)] border-b border-mostaza/40 text-marfil">
       {/* Franja superior (tablet y PC) */}
-      <div className="hidden md:block bg-[#01372e] text-white py-1.5 px-4">
+      <div className="hidden md:block bg-norte-hondo text-marfil py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1 text-[#bceddf]">
-            <span className="material-symbols-outlined text-[16px] text-[#ffb59e]">sell</span>
-            <span>Precios de mayorista · Pedidos por WhatsApp</span>
+          <span className="flex items-center gap-1.5 text-marfil/85 tracking-wide">
+            <span className="material-symbols-outlined text-[16px] text-mostaza">eco</span>
+            <span>Especias · Condimentos · Almacén — precios de mayorista y pedidos por WhatsApp</span>
           </span>
           <a
-            href={waLink('Hola Karim, quiero hacer un pedido en Los Turquitos')}
+            href={waLink('Hola Karim, quiero hacer un pedido en Norte Origen')}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[#cbe9df] hover:text-white transition-colors"
+            className="flex items-center gap-1 text-marfil/85 hover:text-marfil transition-colors"
           >
             <span className="material-symbols-outlined text-[16px] text-[#1ebe5d]">support_agent</span>
             <span>
-              Atención directa: <strong className="text-white">Karim</strong>
+              Atención directa: <strong className="text-marfil">Karim</strong>
             </span>
-            <span className="hidden lg:inline font-mono text-[#8ebeb1] ml-2">{WHATSAPP_DISPLAY}</span>
+            <span className="hidden lg:inline font-mono text-mostaza ml-2">{WHATSAPP_DISPLAY}</span>
           </a>
         </div>
       </div>
@@ -128,33 +128,35 @@ export function Header({
               <button
                 type="button"
                 onClick={() => onNavigate({ view: 'catalogo' })}
-                className="w-10 h-10 -ml-1 flex items-center justify-center rounded-full text-[#01372e] hover:bg-[#faedcd] active:scale-95 transition-all"
+                className="w-10 h-10 -ml-1 flex items-center justify-center rounded-full text-marfil hover:bg-white/10 active:scale-95 transition-all"
                 aria-label="Volver al catálogo"
               >
                 <span className="material-symbols-outlined text-[24px]">arrow_back</span>
               </button>
               <div className="flex flex-col min-w-0 pl-1">
-                <span className="font-display font-bold text-[#01372e] text-base sm:text-lg leading-tight truncate">
+                <span className="font-serif font-bold text-marfil text-base sm:text-lg leading-tight truncate">
                   {activeView === 'producto' ? 'Ficha de producto' : 'Tu pedido'}
                 </span>
-                <span className="font-mono text-[10px] text-[#49645c] uppercase">Los Turquitos</span>
+                <span className="font-display text-[10px] text-mostaza uppercase tracking-[0.18em]">Norte Origen</span>
               </div>
             </>
           ) : (
             <button
               type="button"
               onClick={() => onNavigate({ view: 'inicio' })}
-              className="flex items-center gap-2 text-left group"
+              className="flex items-center gap-2.5 text-left group"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#1f4e44] shrink-0 shadow-sm group-hover:bg-[#01372e] transition-colors overflow-hidden">
-                <img src={logoUrl} alt="Los Turquitos" className="w-full h-full object-cover" />
-              </div>
+              <img
+                src={logoUrl}
+                alt="Norte Origen"
+                className="w-11 h-11 sm:w-14 sm:h-14 rounded-full shrink-0 object-cover shadow-[0_0_0_1px_rgba(200,155,69,0.5)] group-hover:scale-105 transition-transform"
+              />
               <div className="flex flex-col min-w-0">
-                <span className="font-display font-bold text-[#01372e] text-base sm:text-lg tracking-tight leading-tight truncate">
-                  Los Turquitos
+                <span className="font-display font-semibold text-marfil text-[17px] sm:text-xl tracking-[0.06em] leading-tight truncate">
+                  NORTE ORIGEN
                 </span>
-                <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider text-[#842401] font-semibold truncate leading-none">
-                  {activeView === 'inicio' ? 'Inicio' : activeView === 'cuenta' || activeView === 'ingresar' ? 'Mi cuenta' : 'Catálogo mayorista'}
+                <span className="font-sans text-[9.5px] sm:text-[10.5px] uppercase tracking-[0.2em] text-mostaza font-semibold truncate leading-tight mt-0.5">
+                  {activeView === 'inicio' ? 'Del origen a cada mesa' : activeView === 'cuenta' || activeView === 'ingresar' ? 'Mi cuenta' : 'Catálogo mayorista'}
                 </span>
               </div>
             </button>
@@ -164,7 +166,7 @@ export function Header({
         {/* Buscador (tablet y PC) */}
         <div className="hidden md:block flex-1 max-w-md lg:max-w-xl mx-2">
           <div className="relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#49645c] text-[20px] pointer-events-none">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-salvia text-[20px] pointer-events-none">
               search
             </span>
             <input
@@ -173,13 +175,13 @@ export function Header({
               onChange={(e) => onSearchChange(e.target.value)}
               enterKeyHint="search"
               placeholder="Buscar comino, pimentón, frutos secos, semillas…"
-              className="w-full pl-10 pr-9 py-2 bg-white border border-[#c0c8c4] rounded-xl text-sm text-[#211b08] placeholder-[#707976] focus:outline-none focus:ring-2 focus:ring-[#01372e] focus:border-transparent shadow-sm"
+              className="w-full pl-10 pr-9 py-2 bg-marfil border border-mostaza/40 rounded-xl text-sm text-tinta placeholder-gris-claro focus:outline-none focus:ring-2 focus:ring-mostaza focus:border-transparent shadow-sm"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => onSearchChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#707976] hover:text-[#211b08]"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gris-claro hover:text-tinta"
                 aria-label="Borrar búsqueda"
               >
                 <span className="material-symbols-outlined text-[16px]">close</span>
@@ -190,10 +192,10 @@ export function Header({
 
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
           <a
-            href={waLink('Hola Karim, quiero hacer un pedido en Los Turquitos')}
+            href={waLink('Hola Karim, quiero hacer un pedido en Norte Origen')}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#01372e] hover:bg-[#1f4e44] text-white text-xs font-semibold shadow-sm transition-all active:scale-95"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-marfil/25 hover:bg-white/10 text-marfil text-xs font-semibold transition-all active:scale-95"
           >
             <span className="material-symbols-outlined text-[18px] text-[#1ebe5d]">chat</span>
             <span className="hidden lg:inline">WhatsApp</span>
@@ -203,7 +205,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenSearch}
-            className="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-[#01372e] hover:bg-[#faedcd] transition-colors"
+            className="md:hidden w-10 h-10 flex items-center justify-center rounded-full text-marfil hover:bg-white/10 transition-colors"
             aria-label="Buscar productos"
           >
             <span className="material-symbols-outlined text-[22px]">search</span>
@@ -213,7 +215,7 @@ export function Header({
             type="button"
             onClick={() => onNavigate(accountLabel ? { view: 'cuenta' } : { view: 'ingresar' })}
             className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
-              activeView === 'cuenta' || activeView === 'ingresar' ? 'bg-[#1f4e44] text-white' : 'text-[#01372e] hover:bg-[#faedcd]'
+              activeView === 'cuenta' || activeView === 'ingresar' ? 'bg-marfil text-norte' : 'text-marfil hover:bg-white/10'
             }`}
             aria-label={accountLabel ? 'Mi cuenta' : 'Ingresar o crear cuenta'}
           >
@@ -227,7 +229,7 @@ export function Header({
             type="button"
             onClick={() => onNavigate({ view: 'carrito' })}
             className={`relative flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl transition-all ${
-              activeView === 'carrito' ? 'bg-[#1f4e44] text-white shadow-sm' : 'bg-[#f4e7c8] hover:bg-[#efe1c2] text-[#01372e]'
+              activeView === 'carrito' ? 'bg-marfil text-norte shadow-sm' : 'bg-mostaza hover:bg-[#d4aa58] text-norte shadow-sm'
             }`}
             aria-label={`Ver pedido, ${cartCount} productos`}
           >
@@ -236,7 +238,7 @@ export function Header({
               {/* key = cantidad: al cambiar se remonta el badge y se dispara la animación de rebote */}
               <span
                 key={cartCount}
-                className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 bg-[#842401] text-white font-mono text-[10px] font-bold rounded-full flex items-center justify-center leading-none animate-bump"
+                className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 bg-oferta text-white font-mono text-[10px] font-bold rounded-full flex items-center justify-center leading-none animate-bump ring-2 ring-norte"
               >
                 {cartCount}
               </span>
@@ -250,7 +252,7 @@ export function Header({
       </div>
 
       {/* Pestañas (tablet y PC). En celular se usa MobileBottomNav */}
-      <nav className="hidden md:block bg-[#fff3d7] border-t border-[#efe1c2]">
+      <nav className="hidden md:block bg-norte-claro/60 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="relative flex items-center gap-1 sm:gap-2 py-1.5 overflow-x-auto no-scrollbar">
             <DropPill active={activeTab} buttons={tabRefs} />
@@ -279,7 +281,7 @@ export function Header({
               className={`${navBtn(activeTab === 'ofertas')} flex items-center gap-1`}
               aria-current={activeTab === 'ofertas' ? 'page' : undefined}
             >
-              <span className={`material-symbols-outlined text-[16px] transition-colors duration-300 ${activeTab === 'ofertas' ? 'text-[#ffb59e]' : 'text-[#842401]'}`}>
+              <span className={`material-symbols-outlined text-[16px] transition-colors duration-300 ${activeTab === 'ofertas' ? 'text-oferta' : 'text-mostaza'}`}>
                 local_fire_department
               </span>
               <span>Ofertas y destacados</span>
@@ -288,10 +290,10 @@ export function Header({
               Cómo comprar
             </button>
             <a
-              href={waLink('Hola Karim, te contacto desde la tienda de Los Turquitos')}
+              href={waLink('Hola Karim, te contacto desde la tienda de Norte Origen')}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors text-[#01372e] hover:bg-[#faedcd] flex items-center gap-1"
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors text-marfil/85 hover:text-marfil hover:bg-white/10 flex items-center gap-1"
             >
               <span className="material-symbols-outlined text-[16px] text-[#1ebe5d]">chat</span>
               <span>Contacto directo con Karim</span>

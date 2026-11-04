@@ -109,17 +109,17 @@ export function CategorySections({ products, categories, onOpen, onAdd, onSeeCat
       {groups.map((g) => (
         <section key={g.id} id={sectionId(g.id)} className="flex flex-col gap-3 scroll-mt-16 sm:scroll-mt-20 md:scroll-mt-44">
           {/* Título fijo mientras se recorre la categoría, con línea abajo (como las letras de Contactos) */}
-          <div className="sticky top-16 sm:top-20 md:top-44 z-20 -mx-1 px-1 pt-2 bg-[#fff8f0]/95 backdrop-blur-md">
-            <div className="flex items-baseline justify-between gap-3 border-b-2 border-[#01372e]/15 pb-2">
-              <h2 className="font-serif text-lg sm:text-xl font-bold text-[#01372e] leading-tight">
+          <div className="sticky top-16 sm:top-20 md:top-44 z-20 -mx-1 px-1 pt-2 bg-marfil/95 backdrop-blur-md">
+            <div className="flex items-baseline justify-between gap-3 border-b-2 border-norte/15 pb-2">
+              <h2 className="font-serif text-lg sm:text-xl font-bold text-norte leading-tight">
                 {g.label}
-                <span className="ml-2 font-mono text-[11px] font-bold text-[#707976] align-middle">({g.items.length})</span>
+                <span className="ml-2 font-mono text-[11px] font-bold text-gris-claro align-middle">({g.items.length})</span>
               </h2>
               {onSeeCategory && (
                 <button
                   type="button"
                   onClick={() => onSeeCategory(g.id)}
-                  className="shrink-0 text-xs font-bold text-[#49645c] hover:text-[#01372e] transition-colors"
+                  className="shrink-0 text-xs font-bold text-salvia hover:text-norte transition-colors"
                 >
                   Ver solo esta →
                 </button>
@@ -151,9 +151,9 @@ export function CategorySections({ products, categories, onOpen, onAdd, onSeeCat
             className="absolute inset-y-2 left-0 right-0 touch-none cursor-pointer select-none"
           >
             {/* línea de fondo y parte recorrida */}
-            <span className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] rounded-full bg-[#01372e]/15" />
+            <span className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] rounded-full bg-norte/15" />
             <span
-              className="absolute left-1/2 -translate-x-1/2 top-0 w-[2px] rounded-full bg-[#01372e] transition-[height] duration-150"
+              className="absolute left-1/2 -translate-x-1/2 top-0 w-[2px] rounded-full bg-norte transition-[height] duration-150"
               style={{ height: `${progress * 100}%` }}
             />
             {groups.map((g, i) => (
@@ -173,10 +173,10 @@ export function CategorySections({ products, categories, onOpen, onAdd, onSeeCat
                 <span
                   className={`rounded-full border-2 transition-all duration-200 ${
                     i === active
-                      ? 'w-3.5 h-3.5 bg-[#842401] border-[#fff8f0] shadow-[0_0_0_2px_#842401]'
+                      ? 'w-3.5 h-3.5 bg-mostaza-oscura border-marfil shadow-[0_0_0_2px_var(--color-mostaza-oscura)]'
                       : i < active
-                        ? 'w-2 h-2 bg-[#01372e] border-[#01372e]'
-                        : 'w-2 h-2 bg-[#fff8f0] border-[#01372e]/40'
+                        ? 'w-2 h-2 bg-norte border-norte'
+                        : 'w-2 h-2 bg-marfil border-norte/40'
                   }`}
                 />
               </button>
@@ -184,7 +184,7 @@ export function CategorySections({ products, categories, onOpen, onAdd, onSeeCat
             {/* Cartelito con el nombre de la categoría actual */}
             <span
               aria-hidden="true"
-              className={`absolute right-full mr-1 -translate-y-1/2 whitespace-nowrap px-2.5 py-1 rounded-lg bg-[#01372e] text-white text-xs font-semibold shadow-md pointer-events-none transition-all duration-200 ${
+              className={`absolute right-full mr-1 -translate-y-1/2 whitespace-nowrap px-2.5 py-1 rounded-lg bg-norte text-white text-xs font-semibold shadow-md pointer-events-none transition-all duration-200 ${
                 showLabel || dragging ? 'opacity-100' : 'opacity-0 translate-x-1'
               }`}
               style={{ top: `${pos(active)}%` }}

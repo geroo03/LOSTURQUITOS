@@ -8,7 +8,7 @@ interface Props {
 export function ProductImage({ src, alt, className = '' }: Props) {
   if (!src) {
     return (
-      <div className={`flex items-center justify-center text-[#49645c]/50 bg-[#faedcd] ${className}`}>
+      <div className={`flex items-center justify-center text-salvia/50 bg-marfil-200 ${className}`}>
         <span className="material-symbols-outlined text-[32px]">image</span>
       </div>
     );
