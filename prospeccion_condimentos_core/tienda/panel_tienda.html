@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#1f4e44">
-<title>Los Turquitos — Panel de Administración</title>
+<meta name="theme-color" content="#1f3b31">
+<title>Norte Origen — Panel de Administración</title>
 <link rel="icon" type="image/png" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="manifest" href="/manifest-admin.webmanifest">
@@ -14,18 +14,18 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-messaging-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Domine:wght@600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#fff8f0; --panel:#ffffff; --panel2:#fff3d7; --border:#efe1c2;
-    --text:#211b08; --muted:#404846;
-    --alta:#ba1a1a; --media:#b26a00; --baja:#707976;
-    --mayorista:#1f4e44; --minorista:#2f7a4d; --live:#1a9c4d;
+    --bg:#f4ede1; --panel:#ffffff; --panel2:#efe7d8; --border:#dfd2ba;
+    --text:#1c2420; --muted:#4a554f;
+    --alta:#a3402a; --media:#b26a00; --baja:#737c76;
+    --mayorista:#1f3b31; --minorista:#7a8f3b; --live:#1a9c4d;
   }
   *{box-sizing:border-box}
   body{
     margin:0; background:var(--bg); color:var(--text);
-    font-family:'Plus Jakarta Sans',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    font-family:'Montserrat',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
   button{font-family:inherit}
@@ -48,7 +48,7 @@
     padding:9px 11px; border-radius:6px; font-size:13.5px;
   }
   #login-form button{
-    background:#01372e; border:1px solid #01372e; color:#fff; padding:9px; border-radius:6px;
+    background:#1f3b31; border:1px solid #1f3b31; color:#fff; padding:9px; border-radius:6px;
     font-size:13.5px; font-weight:600; cursor:pointer; margin-top:4px;
   }
   #login-form button:disabled{opacity:.6; cursor:default}
@@ -72,8 +72,8 @@
     background:var(--panel2); border:1px solid var(--border); color:var(--text);
     padding:7px 12px; border-radius:6px; font-size:13px; cursor:pointer;
   }
-  .btn:hover{border-color:#c0c8c4}
-  input[type=text], select{
+  .btn:hover{border-color:#cbbfa6}
+  input[type=text], input[type=number], select{
     background:var(--panel2); border:1px solid var(--border); color:var(--text);
     padding:7px 10px; border-radius:6px; font-size:13px;
   }
@@ -102,8 +102,8 @@
   .pedido-cliente{font-weight:600; font-size:13.5px}
   .pedido-fecha{color:var(--muted); font-size:11.5px; margin-top:2px}
   .pedido-total{font-weight:700; font-size:15px; color:var(--mayorista); white-space:nowrap}
-  .pedido-items{font-size:12.5px; color:#404846; margin-top:8px; line-height:1.5}
-  .pedido-detalle{font-size:12px; color:#404846; margin-top:4px}
+  .pedido-items{font-size:12.5px; color:#4a554f; margin-top:8px; line-height:1.5}
+  .pedido-detalle{font-size:12px; color:#4a554f; margin-top:4px}
   .pedido-nota{font-size:12px; color:var(--muted); margin-top:6px; font-style:italic}
   .pedido-footer{display:flex; gap:8px; align-items:center; margin-top:12px}
   .pedido-estado{
@@ -120,15 +120,15 @@
   #productos-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px}
   #productos-toolbar .spacer{flex:1}
   #productos-count, .toolbar-count{color:var(--muted); font-size:12px}
-  .btn-primary{background:#01372e; border-color:#01372e; color:#fff}
-  .btn-primary:hover{border-color:#1f4e44}
+  .btn-primary{background:#1f3b31; border-color:#1f3b31; color:#fff}
+  .btn-primary:hover{border-color:#1f3b31}
   .productos-table{width:100%; border-collapse:collapse; font-size:12.5px}
   .productos-table th{
     text-align:left; color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase;
     letter-spacing:.04em; padding:8px 10px; border-bottom:1px solid var(--border);
   }
   .productos-table td{padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:middle}
-  .productos-table tr:hover td{background:#fff3d7}
+  .productos-table tr:hover td{background:#efe7d8}
   .producto-thumb{
     width:38px; height:38px; border-radius:5px; object-fit:cover; background:var(--panel2);
     border:1px solid var(--border); display:block;
@@ -140,7 +140,7 @@
   .producto-nombre{font-weight:600}
   .producto-inactivo{opacity:.5}
   .badge-inactivo{
-    background:rgba(112,121,118,.18); color:#404846; border-radius:5px; padding:1px 6px;
+    background:rgba(112,121,118,.18); color:#4a554f; border-radius:5px; padding:1px 6px;
     font-size:10px; font-weight:600; margin-left:6px;
   }
   .badge-destacado{
@@ -154,9 +154,9 @@
   .producto-row-actions{display:flex; gap:6px}
   .producto-row-actions button{
     font-size:11px; padding:5px 8px; border-radius:5px; border:1px solid var(--border);
-    background:#fff8f0; color:var(--text); cursor:pointer;
+    background:#f4ede1; color:var(--text); cursor:pointer;
   }
-  .producto-row-actions button:hover{border-color:#c0c8c4}
+  .producto-row-actions button:hover{border-color:#cbbfa6}
   .producto-row-actions .danger{background:rgba(186,26,26,.08); border-color:rgba(186,26,26,.35); color:var(--alta)}
 
   /* ---------- CATEGORÍAS ---------- */
@@ -213,7 +213,7 @@
     background:var(--panel2); border:1px dashed var(--border); color:var(--muted); padding:7px 12px;
     border-radius:6px; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
   }
-  .upload-btn:hover{border-color:#c0c8c4; color:var(--text)}
+  .upload-btn:hover{border-color:#cbbfa6; color:var(--text)}
   .upload-status{font-size:11.5px; color:var(--muted); margin-left:8px}
   #producto-modal-actions{display:flex; justify-content:space-between; gap:10px; margin-top:20px}
   #producto-error{color:var(--alta); font-size:12px; min-height:1em; margin-top:10px}
@@ -223,9 +223,9 @@
   .kpi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:16px}
   .kpi{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; text-align:left; font-family:inherit; color:var(--text)}
   button.kpi{cursor:pointer}
-  button.kpi:hover{border-color:#c0c8c4}
+  button.kpi:hover{border-color:#cbbfa6}
   .kpi .k-label{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted)}
-  .kpi .k-value{font-family:'Domine',Georgia,serif; font-size:24px; font-weight:700; color:var(--mayorista); margin-top:4px}
+  .kpi .k-value{font-family:'Playfair Display',Georgia,serif; font-size:24px; font-weight:700; color:var(--mayorista); margin-top:4px}
   .kpi .k-sub{font-size:12px; color:var(--muted); margin-top:2px}
   .kpi.alerta .k-value{color:var(--alta)}
   .resumen-cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:12px}
@@ -264,10 +264,10 @@
   .pedido-estado.rechazado{border-color:var(--alta); color:var(--alta)}
   .pres-actions{display:flex; gap:6px; flex-wrap:wrap}
   .pres-actions button{
-    background:#fff8f0; border:1px solid var(--border); color:var(--text); border-radius:5px;
+    background:#f4ede1; border:1px solid var(--border); color:var(--text); border-radius:5px;
     padding:4px 8px; font-size:11.5px; cursor:pointer;
   }
-  .pres-actions button:hover{border-color:#c0c8c4}
+  .pres-actions button:hover{border-color:#cbbfa6}
   .pres-actions .danger{color:var(--alta); border-color:rgba(186,26,26,.35); background:rgba(186,26,26,.08)}
   .pres-actions .wa{background:#1ebe5d; border-color:#1ebe5d; color:#fff}
   #pres-overlay{
@@ -287,7 +287,7 @@
     width:100%; background:var(--panel2); border:1px solid var(--border); color:var(--text);
     padding:8px 10px; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical;
   }
-  #pres-banner{background:#fff3d7; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:12px; margin:8px 0; display:none}
+  #pres-banner{background:#efe7d8; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:12px; margin:8px 0; display:none}
   .pres-picker{position:relative}
   #pres-results{
     position:absolute; left:0; right:0; top:100%; z-index:5; background:var(--panel); border:1px solid var(--border);
@@ -297,7 +297,7 @@
     display:flex; width:100%; justify-content:space-between; gap:10px; background:none; border:none; text-align:left;
     padding:8px 10px; font-size:12.5px; cursor:pointer; color:var(--text); border-bottom:1px solid var(--border);
   }
-  #pres-results button:hover{background:#fff3d7}
+  #pres-results button:hover{background:#efe7d8}
   #pres-results .sub{color:var(--muted); font-size:11.5px}
   .pres-lines{width:100%; border-collapse:collapse; font-size:12.5px; margin-top:10px}
   .pres-lines th{text-align:left; color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; padding:6px 6px; border-bottom:1px solid var(--border)}
@@ -316,7 +316,7 @@
     display:flex; align-items:center; gap:6px; background:var(--panel2); border:1px solid var(--border); color:var(--text);
     padding:7px 12px; border-radius:6px; font-size:13px; cursor:pointer;
   }
-  #push-btn:hover{border-color:#c0c8c4}
+  #push-btn:hover{border-color:#cbbfa6}
   #push-btn.on{background:rgba(26,156,77,.12); border-color:#1a9c4d; color:#1a9c4d}
   #push-btn .dot{width:7px; height:7px; border-radius:50%; background:#1a9c4d; display:none}
   #push-btn.on .dot{display:inline-block}
@@ -341,9 +341,37 @@
   .logo-preview img{width:100%; height:100%; object-fit:cover}
   .logo-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 
-  /* ---------- Tema Los Turquitos (mismo lenguaje visual que el catálogo) ---------- */
-  h1,h2,h3{font-family:'Domine',Georgia,serif}
-  ::selection{background:#01372e; color:#fff8f0}
+  /* ---------- Tema Norte Origen (mismo lenguaje visual que el catálogo) ---------- */
+  h1,h2,h3{font-family:'Playfair Display',Georgia,serif}
+  :root{--mostaza:#c89b45}
+  header{border-bottom:2px solid var(--mostaza)}
+  .brand-logo{width:30px; height:30px; border-radius:50%; margin-right:9px; box-shadow:0 0 0 1px rgba(200,155,69,.6)}
+  .brand-name{font-family:'Cinzel','Playfair Display',Georgia,serif; letter-spacing:.06em}
+  #login-form{border-top:3px solid var(--mostaza)}
+
+  /* Precio editable directo en la tabla de productos */
+  .precio-input{width:96px; padding:5px 8px; border-radius:6px; border:1px solid var(--border); background:var(--panel2);
+    color:var(--text); font:inherit; font-weight:600; font-variant-numeric:tabular-nums}
+  .precio-input:focus{outline:2px solid var(--mayorista); outline-offset:1px; background:#fff}
+  .precio-input.ok{border-color:var(--live); background:rgba(26,156,77,.08)}
+  .precio-input.err{border-color:var(--alta); background:rgba(163,64,42,.08)}
+  .precio-sub{font-size:11px; color:var(--muted); margin-top:3px}
+
+  /* Selector de marca de los PDF */
+  #marca-overlay{position:fixed; inset:0; background:rgba(20,30,25,.45); z-index:60; display:none}
+  #marca-modal{position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:min(420px,calc(100vw - 32px));
+    background:var(--panel); border-radius:12px; border-top:3px solid var(--mostaza); padding:20px; z-index:61; display:none;
+    box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  #marca-overlay.open, #marca-modal.open{display:block}
+  #marca-modal h3{margin:0 0 4px; font-size:17px}
+  #marca-modal .sub{color:var(--muted); font-size:12.5px; margin:0 0 14px}
+  .marca-opciones{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px}
+  .marca-opciones button{display:flex; flex-direction:column; align-items:center; gap:8px; padding:14px 8px; border-radius:10px;
+    border:2px solid var(--border); background:var(--panel2); cursor:pointer; font:inherit; font-weight:600; font-size:13px; color:var(--text)}
+  .marca-opciones button:hover{border-color:var(--mostaza)}
+  .marca-opciones button.ultima{border-color:var(--mayorista)}
+  .marca-opciones img{width:72px; height:72px; border-radius:50%; object-fit:cover}
+  ::selection{background:#1f3b31; color:#f4ede1}
 </style>
 </head>
 <body>
@@ -351,8 +379,8 @@
 <div id="login-screen">
   <form id="login-form">
     <h1>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:6px"><path d="M12 2a5 5 0 0 0-5 5v2H6a2 2 0 0 0-2 2l1 9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2l1-9a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Z"/><path d="M9 7a3 3 0 0 1 6 0"/><path d="M9 13h6M9 17h6"/></svg>
-      Los Turquitos
+      <img class="brand-logo" src="/marca/logo-circulo.webp" alt="">
+      <span class="brand-name">Norte Origen</span>
     </h1>
     <p class="sub">Panel de administración — iniciá sesión para continuar</p>
     <input type="email" id="login-email" placeholder="Email" autocomplete="username" required>
@@ -362,11 +390,23 @@
   </form>
 </div>
 
+<!-- Selector de marca para los PDF -->
+<div id="marca-overlay" onclick="cerrarMarca(null)"></div>
+<div id="marca-modal" role="dialog" aria-modal="true" aria-labelledby="marca-titulo">
+  <h3 id="marca-titulo">¿Con qué marca sale el PDF?</h3>
+  <p class="sub" id="marca-sub"></p>
+  <div class="marca-opciones">
+    <button type="button" data-marca="norte" onclick="cerrarMarca('norte')"><img src="/marca/logo-circulo.webp" alt=""><span>Norte Origen</span></button>
+    <button type="button" data-marca="turquitos" onclick="cerrarMarca('turquitos')"><img src="/marca/logo-los-turquitos.jpg" alt=""><span>Los Turquitos</span></button>
+  </div>
+  <button type="button" class="btn" onclick="cerrarMarca(null)">Cancelar</button>
+</div>
+
 <div id="app" style="display:none">
   <header>
     <h1>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:6px"><path d="M12 2a5 5 0 0 0-5 5v2H6a2 2 0 0 0-2 2l1 9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2l1-9a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Z"/><path d="M9 7a3 3 0 0 1 6 0"/><path d="M9 13h6M9 17h6"/></svg>
-      Los Turquitos
+      <img class="brand-logo" src="/marca/logo-circulo.webp" alt="">
+      <span class="brand-name">Norte Origen</span>
     </h1>
     <span class="live-dot">En vivo</span>
     <span class="sub">Panel de Karim — pedidos, productos y configuración del catálogo</span>
@@ -591,6 +631,70 @@ const DEFAULT_TAGLINE = 'Condimentos, frutos secos, especias, aceitunas, encurti
 
 function money(n){ return '$' + (n ?? 0).toLocaleString('es-AR'); }
 
+// ---------- Marcas de los PDF ----------
+// Norte Origen y Los Turquitos venden lo mismo con los mismos precios: solo cambia el diseño del PDF (logo, nombre y
+// colores). Cada descarga pregunta la marca y recuerda la última elegida.
+const LOGO_LOS_TURQUITOS_GUARDADO = SUPABASE_URL + '/storage/v1/object/public/productos/config/logo-los-turquitos.jpg';
+const MARCAS = {
+  norte: {
+    id: 'norte', nombre: 'Norte Origen', bajada: 'Especias · Condimentos · Almacén', logo: '/logo.jpg', archivo: 'norte-origen',
+    principal: [31, 59, 49], acento: [200, 155, 69], suave: [244, 237, 225], texto: [28, 36, 32], gris: [115, 124, 118], oferta: [163, 64, 42],
+  },
+  turquitos: {
+    id: 'turquitos', nombre: 'Los Turquitos', bajada: 'Especiera', logo: '/marca/logo-los-turquitos.jpg', archivo: 'los-turquitos',
+    principal: [92, 0, 1], acento: [92, 0, 1], suave: [244, 231, 200], texto: [33, 27, 8], gris: [112, 121, 118], oferta: [186, 26, 26],
+  },
+};
+const WHATSAPP_PDF = '+54 9 3856 14-9181';
+
+function marcaPreferida(){
+  try { return MARCAS[localStorage.getItem('pdf-marca')] || MARCAS.norte; } catch { return MARCAS.norte; }
+}
+
+let resolverMarca = null;
+// Abre el selector y devuelve la marca elegida (o null si se cancela).
+function elegirMarca(que){
+  if (resolverMarca) resolverMarca(null);
+  document.getElementById('marca-sub').textContent = que;
+  const ultima = marcaPreferida().id;
+  document.querySelectorAll('.marca-opciones button').forEach(b => b.classList.toggle('ultima', b.dataset.marca === ultima));
+  document.getElementById('marca-overlay').classList.add('open');
+  document.getElementById('marca-modal').classList.add('open');
+  document.querySelector(`.marca-opciones button[data-marca="${ultima}"]`).focus();
+  return new Promise(res => { resolverMarca = res; });
+}
+function cerrarMarca(id){
+  document.getElementById('marca-overlay').classList.remove('open');
+  document.getElementById('marca-modal').classList.remove('open');
+  if (id){ try { localStorage.setItem('pdf-marca', id); } catch {} }
+  const r = resolverMarca; resolverMarca = null;
+  if (r) r(id ? MARCAS[id] : null);
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && resolverMarca) cerrarMarca(null); });
+
+// Encabezado común: logo, nombre de la marca, subtítulo, textos a la derecha y una línea del color de la marca.
+async function encabezadoPDF(doc, marca, subtitulo, derecha){
+  let x = 14;
+  try {
+    doc.addImage(await cargarImagenComoDataURL(marca.logo), 'JPEG', 14, 10, 22, 22);
+    x = 40;
+  } catch (e){ console.error('No se pudo incrustar el logo en el PDF:', e); }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...marca.principal);
+  doc.text(marca.nombre, x, 21);
+  doc.setFontSize(11); doc.setTextColor(...marca.texto);
+  if (subtitulo) doc.text(subtitulo, x, 28);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...marca.gris);
+  (derecha || []).forEach((t, i) => doc.text(t, 196, 20 + i * 6, { align: 'right' }));
+  doc.setDrawColor(...marca.acento); doc.setLineWidth(0.6); doc.line(14, 35, 196, 35);
+  return 44;
+}
+function piePDF(doc, marca, texto, pagina){
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...marca.gris);
+  doc.text(texto, 14, 289);
+  if (pagina) doc.text(`Página ${pagina}`, 196, 289, { align: 'right' });
+}
+function archivoPDF(t){ return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase(); }
+
 function escapeHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -811,72 +915,44 @@ async function cargarImagenComoDataURL(url){
 async function generarPDF(id){
   const p = pedidos.find(x => x.id === id);
   if (!p) return;
+  const marca = await elegirMarca(`Pedido #${p.id}`);
+  if (!marca) return;
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const items = Array.isArray(p.items) ? p.items : [];
-  const ROJO = [92, 0, 1]; // mismo bordó del fondo del logo (sampleado de la imagen real)
-  const NEGRO = [0, 0, 0];
-
-  let tituloX = 14;
-  if (logoUrl){
-    try {
-      const logoDataUrl = await cargarImagenComoDataURL(logoUrl);
-      doc.addImage(logoDataUrl, 'JPEG', 14, 10, 22, 22);
-      tituloX = 40;
-    } catch (e){
-      console.error('No se pudo incrustar el logo en el PDF:', e);
-    }
-  }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(24);
-  doc.setTextColor(31, 78, 68);
-  doc.text('Los Turquitos', tituloX, 24);
-  doc.setTextColor(...NEGRO);
+  let y = await encabezadoPDF(doc, marca, `Pedido #${p.id}`, [`Fecha: ${new Date(p.creado_en).toLocaleString('es-AR')}`, marca.bajada]);
 
   // Datos del pedido: en negrita para que se lean de un vistazo.
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Pedido #${p.id}`, 14, 40);
-  doc.text(`Fecha: ${new Date(p.creado_en).toLocaleString('es-AR')}`, 14, 46);
-
-  let y = 52;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...marca.texto);
   if (p.cliente_nombre){ doc.text(`Cliente: ${p.cliente_nombre}`, 14, y); y += 6; }
   if (p.direccion){ doc.text(`Dirección: ${p.direccion}`, 14, y); y += 6; }
   if (p.metodo_pago){ doc.text(`Método de pago: ${p.metodo_pago}`, 14, y); y += 6; }
   if (p.horario_entrega){ doc.text(`Horario preferido: ${p.horario_entrega}`, 14, y); y += 6; }
-  if (p.nota){ doc.text(`Nota: ${p.nota}`, 14, y); y += 8; }
+  if (p.nota){ const nl = doc.splitTextToSize(`Nota: ${p.nota}`, 182); doc.text(nl, 14, y); y += nl.length * 6 + 2; }
+  y += 4;
 
-  doc.setTextColor(...ROJO);
-  doc.setFontSize(13);
+  doc.setTextColor(...marca.principal); doc.setFontSize(13);
   doc.text('Detalle del pedido', 14, y);
-  doc.setTextColor(...NEGRO);
   y += 8;
 
-  // Productos y precios más grandes y en negrita — el precio en rojo para que resalte como el logo.
+  // Productos y precios grandes y en negrita, el precio con el color de la marca para que resalte.
   doc.setFontSize(12.5);
   items.forEach(it => {
-    if (y > 265){ doc.addPage(); y = 20; }
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...NEGRO);
+    if (y > 265){ piePDF(doc, marca, `${marca.nombre} — Pedidos por WhatsApp ${WHATSAPP_PDF}`); doc.addPage(); y = 20; }
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...marca.texto);
     doc.text(`${it.nombre} — ${it.cantidad} × ${it.unidad}`, 14, y);
-    doc.setTextColor(...ROJO);
+    doc.setTextColor(...marca.principal);
     doc.text(money(it.precio * it.cantidad), 196, y, { align: 'right' });
     y += 7;
   });
 
   y += 4;
-  doc.setDrawColor(...ROJO);
-  doc.setLineWidth(0.5);
-  doc.line(14, y, 196, y);
+  doc.setDrawColor(...marca.acento); doc.setLineWidth(0.5); doc.line(14, y, 196, y);
   y += 11;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(...ROJO);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(...marca.principal);
   doc.text(`Total: ${money(p.total)}`, 196, y, { align: 'right' });
-  doc.setTextColor(...NEGRO);
-
-  doc.save(`pedido-${p.id}.pdf`);
+  piePDF(doc, marca, `${marca.nombre} — Pedidos por WhatsApp ${WHATSAPP_PDF}`);
+  doc.save(`pedido-${p.id}-${marca.archivo}.pdf`);
 }
 
 // ---------- Productos ----------
@@ -930,10 +1006,14 @@ function productoRowHTML(p){
       </td>
       <td>${escapeHtml(categoriaLabel(p.categoria_id))}</td>
       <td>${escapeHtml(p.unidad || '')}</td>
-      <td>${p.precio_oferta != null && p.precio_oferta < p.precio
-        ? `<s style="color:var(--muted)">${money(p.precio)}</s> <strong style="color:var(--alta)">${money(p.precio_oferta)}</strong>`
-        : money(p.precio)}${precioMinoristaDe(p) != null
-        ? `<div style="font-size:11px;color:var(--muted)">Minorista: ${money(precioMinoristaDe(p))}</div>` : ''}</td>
+      <td>
+        <input class="precio-input" type="number" min="0" step="1" inputmode="numeric" value="${p.precio}"
+          aria-label="Precio de ${escapeHtml(p.nombre)} (${escapeHtml(p.unidad || '')})"
+          onchange="guardarPrecioInline(${p.id}, this)" onkeydown="if (event.key === 'Enter') this.blur()">
+        ${p.precio_oferta != null && p.precio_oferta < p.precio
+          ? `<div class="precio-sub" style="color:var(--alta)">Oferta: <strong>${money(p.precio_oferta)}</strong></div>` : ''}
+        ${precioMinoristaDe(p) != null ? `<div class="precio-sub">Minorista: ${money(precioMinoristaDe(p))}</div>` : ''}
+      </td>
       <td>
         <div class="producto-row-actions">
           <button onclick="openProductoModal(${p.id})">Editar</button>
@@ -965,7 +1045,8 @@ function renderProductos(){
       </select>
       <span id="productos-count"></span>
       <div class="spacer"></div>
-      <button class="btn" onclick="generarListaMinoristaPDF()" title="Lista de precios de venta al público (precio mayorista + recargo, o el precio minorista propio de cada producto)">📄 Lista minorista (PDF)</button>
+      <button class="btn" onclick="generarListaPDF('mayorista')" title="Lista de precios mayorista, con los precios de hoy">📄 Lista mayorista (PDF)</button>
+      <button class="btn" onclick="generarListaPDF('minorista')" title="Lista de precios de venta al público (precio mayorista + recargo, o el precio minorista propio de cada producto)">📄 Lista minorista (PDF)</button>
       <button class="btn" onclick="descargarPlanilla()" title="Baja todos los productos en Excel para editar precios">⬇ Descargar planilla</button>
       <button class="btn" onclick="document.getElementById('imp-file').click()" title="Sube la planilla con los precios nuevos">⬆ Importar precios</button>
       <button class="btn btn-primary" onclick="openProductoModal(null)">+ Nuevo producto</button>
@@ -1000,6 +1081,31 @@ function renderProductosResults(){
       <thead><tr><th></th><th>Nombre</th><th>Categoría</th><th>Unidad</th><th>Precio</th><th></th></tr></thead>
       <tbody>${filtrados.map(productoRowHTML).join('')}</tbody>
     </table>` : `<p style="padding:20px;color:var(--muted)">No hay productos que coincidan con el filtro.</p>`;
+}
+
+// Cambiar el precio directo en la tabla: se guarda al salir del campo o con Enter.
+async function guardarPrecioInline(id, input){
+  const p = productos.find(x => x.id === id);
+  if (!p) return;
+  const nuevo = parseInt(input.value, 10);
+  input.classList.remove('ok', 'err');
+  if (!Number.isFinite(nuevo) || nuevo < 0){ input.classList.add('err'); input.value = p.precio; return; }
+  if (nuevo === p.precio) return;
+  if (p.precio_oferta != null && p.precio_oferta >= nuevo){
+    alert(`El precio tiene que ser mayor que el de oferta (${money(p.precio_oferta)}). Si querés sacar la oferta, hacelo desde "Editar".`);
+    input.classList.add('err'); input.value = p.precio; return;
+  }
+  input.disabled = true;
+  const { error } = await sb.from('productos').update({ precio: nuevo }).eq('id', id);
+  input.disabled = false;
+  if (error){
+    alert('No se pudo guardar el precio: ' + error.message);
+    input.classList.add('err'); input.value = p.precio; return;
+  }
+  p.precio = nuevo;
+  input.classList.add('ok');
+  setTimeout(() => input.classList.remove('ok'), 1500);
+  renderResumen();
 }
 
 async function toggleActivoProducto(id, nuevoActivo){
@@ -1373,13 +1479,13 @@ async function loadConfiguracion(){
 }
 
 function renderConfiguracion(){
-  const previewLogo = logoUrl
-    ? `<img src="${escapeHtml(logoUrl)}" alt="Logo actual">`
-    : 'K';
+  // El logo de Los Turquitos que quedó guardado ya no lo usa el catálogo: se muestra el de Norte Origen.
+  const logoEnUso = logoUrl && logoUrl !== LOGO_LOS_TURQUITOS_GUARDADO ? logoUrl : '/marca/logo-circulo.webp';
+  const previewLogo = `<img src="${escapeHtml(logoEnUso)}" alt="Logo actual">`;
   document.getElementById('config-view').innerHTML = `
     <div class="config-card">
       <h3>Logo del negocio</h3>
-      <p class="sub">Se muestra en el catálogo público, al lado de "Atendido por Karim". Si no cargás uno, se ve la inicial "K" por defecto.</p>
+      <p class="sub">Se muestra en el catálogo público. Si no cargás uno, se usa el logo de Norte Origen. Los PDF usan siempre el logo de la marca que elijas al descargarlos.</p>
       <div class="logo-preview">${previewLogo}</div>
       <div class="logo-actions">
         <label class="upload-btn">
@@ -1393,7 +1499,7 @@ function renderConfiguracion(){
 
     <div class="config-card" style="margin-top:16px">
       <h3>Imagen de fondo del catálogo</h3>
-      <p class="sub">Se muestra de fondo en la portada del catálogo, detrás del título "Los Turquitos". Si no cargás una, queda el fondo verde liso de siempre.</p>
+      <p class="sub">Se muestra de fondo en la portada del catálogo, detrás del título "Norte Origen". Si no cargás una, queda el fondo verde liso de siempre.</p>
       ${fondoUrl ? `<img src="${escapeHtml(fondoUrl)}" alt="Fondo actual" style="width:100%;max-width:320px;border-radius:8px;border:1px solid var(--border);margin-bottom:14px;display:block">` : ''}
       <div class="logo-actions">
         <label class="upload-btn">
@@ -1407,7 +1513,7 @@ function renderConfiguracion(){
 
     <div class="config-card" style="margin-top:16px">
       <h3>Descripción de la portada</h3>
-      <p class="sub">El texto que aparece debajo de "Los Turquitos" en la portada del catálogo.</p>
+      <p class="sub">El texto que aparece debajo del título en la portada del catálogo.</p>
       <textarea id="tagline-input" rows="3" style="width:100%">${escapeHtml(tagline || DEFAULT_TAGLINE)}</textarea>
       <div class="logo-actions" style="margin-top:10px">
         <button class="btn btn-primary" onclick="guardarTagline()">Guardar descripción</button>
@@ -1422,7 +1528,7 @@ function renderConfiguracion(){
       <div class="logo-actions">
         <input type="number" id="recargo-input" min="0" step="1" placeholder="Ej: 35" value="${recargoMinorista ?? ''}" style="width:90px"> <span>%</span>
         <button class="btn btn-primary" onclick="guardarRecargoMinorista()">Guardar recargo</button>
-        <button class="btn" onclick="generarListaMinoristaPDF()">📄 Descargar lista minorista (PDF)</button>
+        <button class="btn" onclick="generarListaPDF('minorista')">📄 Descargar lista minorista (PDF)</button>
         <span class="upload-status" id="recargo-status"></span>
       </div>
     </div>`;
@@ -1897,7 +2003,7 @@ async function aplicarImport(){
     btn.disabled = false;
     return;
   }
-  st.innerHTML = `<span style="color:#0f6b34"><strong>Listo:</strong> ${hechos} productos actualizados${nuevosOk ? ' y ' + nuevosOk + ' nuevos' : ''}.</span>`;
+  st.innerHTML = `<span style="color:#4e5e22"><strong>Listo:</strong> ${hechos} productos actualizados${nuevosOk ? ' y ' + nuevosOk + ' nuevos' : ''}.</span>`;
   importPlan = null;
   setTimeout(cerrarImport, 1800);
 }
@@ -1997,7 +2103,7 @@ async function activarNotificacionesPush(){
 
     pushMessaging.onMessage((payload) => {
       const { title, body } = payload.notification || {};
-      mostrarPushToast(title || 'Los Turquitos', body);
+      mostrarPushToast(title || 'Norte Origen', body);
     });
 
     btn.classList.add('on');
@@ -2040,42 +2146,33 @@ function precioMinoristaDe(p){
 }
 
 // Lista de precios minorista en PDF: mismo formato que la lista mayorista del catálogo (frontend/src/lib/priceList.ts).
-async function generarListaMinoristaPDF(){
-  // Precios recién pedidos a Supabase: si el panel quedó abierto en segundo plano, el realtime pudo cortarse.
+// Lista de precios en PDF, mayorista o minorista, con la marca que se elija. Mismo formato que la lista del catálogo
+// (frontend/src/lib/priceList.ts). Los precios se piden a Supabase en el momento para que nunca salgan viejos.
+async function generarListaPDF(tipo){
+  const minorista = tipo === 'minorista';
+  const marca = await elegirMarca(minorista ? 'Lista de precios minorista' : 'Lista de precios mayorista');
+  if (!marca) return;
   await Promise.all([loadProductos(), loadConfiguracion()]);
   const activos = productos.filter(p => p.activo);
-  const faltan = activos.filter(p => precioMinoristaDe(p) == null);
-  if (faltan.length){
-    alert(`Primero configurá el recargo minorista (%) en Configuración. Hay ${faltan.length} productos sin precio minorista propio.`);
-    showTab('config');
-    document.getElementById('recargo-input')?.focus();
-    return;
+  if (minorista){
+    const faltan = activos.filter(p => precioMinoristaDe(p) == null);
+    if (faltan.length){
+      alert(`Primero configurá el recargo minorista (%) en Configuración. Hay ${faltan.length} productos sin precio minorista propio.`);
+      showTab('config');
+      document.getElementById('recargo-input')?.focus();
+      return;
+    }
   }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const TEAL = [31, 78, 68], GREY = [112, 121, 118], INK = [33, 27, 8], CREAM = [244, 231, 200];
   const W = 210, M = 14, BOTTOM = 280, COL_UNIT = 128, COL_PRICE = W - M;
-  let page = 1, y = 0;
+  const pie = minorista ? `Precios de venta al público sujetos a modificación · ${marca.nombre} · WhatsApp ${WHATSAPP_PDF}`
+                        : `Precios sujetos a modificación · Pedidos por WhatsApp ${WHATSAPP_PDF}`;
+  let page = 1;
+  const newPage = () => { piePDF(doc, marca, pie, page); doc.addPage(); page += 1; y = 18; };
 
-  const footer = () => {
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...GREY);
-    doc.text('Precios de venta al público sujetos a modificación · Los Turquitos · WhatsApp +54 9 3856 14-9181', M, 289);
-    doc.text(`Página ${page}`, W - M, 289, { align: 'right' });
-  };
-  const newPage = () => { footer(); doc.addPage(); page += 1; y = 18; };
-
-  let titleX = M;
-  try {
-    doc.addImage(await cargarImagenComoDataURL(logoUrl || 'logo.jpg'), 'JPEG', M, 10, 20, 20);
-    titleX = M + 25;
-  } catch (e){ console.error('No se pudo incrustar el logo en el PDF:', e); }
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...TEAL);
-  doc.text('Los Turquitos', titleX, 20);
-  doc.setFontSize(11); doc.setTextColor(...INK);
-  doc.text('Lista de precios minorista', titleX, 27);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...GREY);
-  doc.text(`Actualizada al ${new Date().toLocaleDateString('es-AR')}`, W - M, 20, { align: 'right' });
-  y = 38;
+  let y = await encabezadoPDF(doc, marca, minorista ? 'Lista de precios minorista' : 'Lista de precios mayorista',
+    [`Actualizada al ${new Date().toLocaleDateString('es-AR')}`, marca.bajada]);
 
   // Cada fila de `productos` es una variante: se agrupan por nombre dentro de cada categoría, en el orden del catálogo.
   const porId = [...activos].sort((a, b) => a.id - b.id);
@@ -2089,7 +2186,7 @@ async function generarListaMinoristaPDF(){
     if (!grupos.size) continue;
 
     if (y > BOTTOM - 30) newPage();
-    doc.setFillColor(...TEAL);
+    doc.setFillColor(...marca.principal);
     doc.roundedRect(M, y, W - 2 * M, 7, 1.2, 1.2, 'F');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(255, 255, 255);
     doc.text(cat.label.toUpperCase(), M + 3, y + 5);
@@ -2104,24 +2201,36 @@ async function generarListaMinoristaPDF(){
       const rowsHeight = Math.max(nameLines.length * 4.4, g.variantes.length * 5.2) + 2;
       if (y + rowsHeight > BOTTOM) newPage();
       if (gi % 2 === 0){
-        doc.setFillColor(...CREAM);
-        doc.setGState(new doc.GState({ opacity: 0.45 }));
+        doc.setFillColor(...marca.suave);
+        doc.setGState(new doc.GState({ opacity: 0.6 }));
         doc.rect(M, y - 3.8, W - 2 * M, rowsHeight, 'F');
         doc.setGState(new doc.GState({ opacity: 1 }));
       }
       const agotado = g.variantes.every(v => v.sin_stock);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...(agotado ? GREY : INK));
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...(agotado ? marca.gris : marca.texto));
       doc.text(nameLines, M + 2, y);
       let vy = y;
       g.variantes.forEach(v => {
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...INK);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...marca.texto);
         doc.text(v.unidad || '', COL_UNIT, vy);
+        const enOferta = !minorista && v.precio_oferta != null && v.precio_oferta < v.precio;
         if (v.sin_stock){
-          doc.setTextColor(...GREY);
+          doc.setTextColor(...marca.gris);
           doc.text('Sin stock', COL_PRICE - 2, vy, { align: 'right' });
+        } else if (enOferta){
+          const ahora = money(v.precio_oferta), antes = money(v.precio);
+          doc.setFont('helvetica', 'bold'); doc.setTextColor(...marca.oferta);
+          doc.text(ahora, COL_PRICE - 2, vy, { align: 'right' });
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...marca.gris);
+          const x2 = COL_PRICE - 2 - doc.getTextWidth(ahora) - 3;
+          doc.text(antes, x2, vy, { align: 'right' });
+          doc.setDrawColor(...marca.gris); doc.setLineWidth(0.2);
+          doc.line(x2 - doc.getTextWidth(antes), vy - 1, x2, vy - 1);
+          doc.setFontSize(7); doc.setTextColor(...marca.oferta);
+          doc.text('OFERTA', COL_UNIT + 16, vy);
         } else {
           doc.setFont('helvetica', 'bold');
-          doc.text(money(precioMinoristaDe(v)), COL_PRICE - 2, vy, { align: 'right' });
+          doc.text(money(minorista ? precioMinoristaDe(v) : v.precio), COL_PRICE - 2, vy, { align: 'right' });
         }
         vy += 5.2;
       });
@@ -2130,8 +2239,8 @@ async function generarListaMinoristaPDF(){
     y += 5;
   }
 
-  footer();
-  doc.save('lista-de-precios-minorista-los-turquitos.pdf');
+  piePDF(doc, marca, pie, page);
+  doc.save(`lista-de-precios-${tipo}-${marca.archivo}.pdf`);
 }
 
 function precioActualProducto(p){
@@ -2417,28 +2526,16 @@ async function guardarPresupuesto(opts){
 
 async function generarPresupuestoPDF(p){
   if (!p) return;
+  const marca = await elegirMarca(p.id ? `Presupuesto #${p.id}` : 'Presupuesto');
+  if (!marca) return;
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const ROJO = [92, 0, 1], NEGRO = [0, 0, 0];
   const items = Array.isArray(p.items) ? p.items : [];
   const t = calcTotalesPres(p);
 
-  let tituloX = 14;
-  if (logoUrl){
-    try {
-      doc.addImage(await cargarImagenComoDataURL(logoUrl), 'JPEG', 14, 10, 22, 22);
-      tituloX = 40;
-    } catch (e){ console.error('No se pudo incrustar el logo en el PDF:', e); }
-  }
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(24);
-  doc.setTextColor(31, 78, 68);
-  doc.text('Los Turquitos', tituloX, 24);
-  doc.setTextColor(...NEGRO);
-  doc.setFontSize(11);
-  doc.text(p.id ? `Presupuesto #${p.id}` : 'Presupuesto', 14, 40);
-  doc.text(`Fecha: ${new Date(p.creado_en || Date.now()).toLocaleDateString('es-AR')}`, 14, 46);
-  let y = 52;
+  let y = await encabezadoPDF(doc, marca, p.id ? `Presupuesto #${p.id}` : 'Presupuesto',
+    [`Fecha: ${new Date(p.creado_en || Date.now()).toLocaleDateString('es-AR')}`, marca.bajada]);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...marca.texto);
   if (p.valido_hasta){
     const [yy, mm, dd] = String(p.valido_hasta).split('-');
     doc.text(`Válido hasta: ${dd}/${mm}/${yy}`, 14, y); y += 6;
@@ -2446,49 +2543,49 @@ async function generarPresupuestoPDF(p){
   if (p.cliente_nombre){ doc.text(`Cliente: ${p.cliente_nombre}`, 14, y); y += 6; }
   y += 4;
 
-  doc.setTextColor(...ROJO);
+  doc.setTextColor(...marca.principal);
   doc.setFontSize(13);
   doc.text('Detalle', 14, y);
   y += 8;
   doc.setFontSize(9.5);
   doc.text('PRODUCTO', 14, y); doc.text('CANT.', 120, y, { align: 'right' });
   doc.text('PRECIO', 155, y, { align: 'right' }); doc.text('SUBTOTAL', 196, y, { align: 'right' });
-  doc.setDrawColor(...ROJO); doc.setLineWidth(0.3); doc.line(14, y + 2, 196, y + 2);
+  doc.setDrawColor(...marca.acento); doc.setLineWidth(0.3); doc.line(14, y + 2, 196, y + 2);
   y += 8;
 
   doc.setFontSize(11);
   items.forEach(it => {
     const lineas = doc.splitTextToSize(`${it.nombre} (${it.unidad})`, 92);
     if (y + lineas.length * 5 > 270){ doc.addPage(); y = 20; }
-    doc.setFont('helvetica', 'bold'); doc.setTextColor(...NEGRO);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...marca.texto);
     doc.text(lineas, 14, y);
     doc.text(String(it.cantidad), 120, y, { align: 'right' });
     doc.text(money(it.precio), 155, y, { align: 'right' });
-    doc.setTextColor(...ROJO);
+    doc.setTextColor(...marca.principal);
     doc.text(money(it.precio * it.cantidad), 196, y, { align: 'right' });
     y += Math.max(1, lineas.length) * 5 + 2;
   });
 
   y += 2;
-  doc.setDrawColor(...ROJO); doc.setLineWidth(0.5); doc.line(14, y, 196, y);
+  doc.setDrawColor(...marca.acento); doc.setLineWidth(0.5); doc.line(14, y, 196, y);
   y += 9;
-  doc.setTextColor(...NEGRO); doc.setFontSize(11);
+  doc.setTextColor(...marca.texto); doc.setFontSize(11);
   if (p.descuento_pct){
     doc.text(`Subtotal: ${money(t.subtotal)}`, 196, y, { align: 'right' }); y += 6;
     doc.text(`Descuento (${p.descuento_pct}%): -${money(t.descuento)}`, 196, y, { align: 'right' }); y += 8;
   }
-  doc.setFontSize(15); doc.setTextColor(...ROJO);
+  doc.setFontSize(15); doc.setTextColor(...marca.principal);
   doc.text(`Total: ${money(t.total)}`, 196, y, { align: 'right' });
   y += 12;
-  doc.setTextColor(...NEGRO); doc.setFontSize(10);
+  doc.setTextColor(...marca.texto); doc.setFontSize(10);
   if (p.nota){
     const nl = doc.splitTextToSize(`Nota: ${p.nota}`, 182);
     doc.text(nl, 14, y); y += nl.length * 5 + 4;
   }
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(112, 121, 118);
-  doc.text('Precios sujetos a confirmación de stock. Los Turquitos — Pedidos por WhatsApp +54 9 3856 14-9181.', 14, 285);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...marca.gris);
+  doc.text(`Precios sujetos a confirmación de stock. ${marca.nombre} — Pedidos por WhatsApp ${WHATSAPP_PDF}.`, 14, 285);
 
-  doc.save(`presupuesto-${p.id || 'nuevo'}-${(p.cliente_nombre || 'cliente').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase()}.pdf`);
+  doc.save(`presupuesto-${p.id || 'nuevo'}-${archivoPDF(p.cliente_nombre || 'cliente')}-${marca.archivo}.pdf`);
 }
 
 function presEditorPDF(){ generarPresupuestoPDF({ ...presEdit, total: calcTotalesPres(presEdit).total }); }
@@ -2504,7 +2601,7 @@ function waPhone(raw){
 
 function textoPresupuestoWhatsApp(p){
   const t = calcTotalesPres(p);
-  let msg = `Hola${p.cliente_nombre ? ' ' + p.cliente_nombre : ''}, te paso el presupuesto de Los Turquitos${p.id ? ' #' + p.id : ''}:\n\n`;
+  let msg = `Hola${p.cliente_nombre ? ' ' + p.cliente_nombre : ''}, te paso el presupuesto de ${marcaPreferida().nombre}${p.id ? ' #' + p.id : ''}:\n\n`;
   (p.items || []).forEach(it => { msg += `• ${it.nombre} — ${it.cantidad} × ${it.unidad} = ${money(it.precio * it.cantidad)}\n`; });
   if (p.descuento_pct) msg += `\nSubtotal: ${money(t.subtotal)}\nDescuento (${p.descuento_pct}%): -${money(t.descuento)}`;
   msg += `\n*Total: ${money(t.total)}*`;
