@@ -34,7 +34,7 @@ prospeccion_condimentos_core/
 
 Hay dos paneles de administración separados, cada uno pensado para el dominio al que pertenece:
 
-- **`tienda/panel_tienda.html`** — Pedidos, Productos y Configuración (logo). Vive en el mismo sitio Netlify que el catálogo (`losturquitos.netlify.app/admin.html`), porque administra justamente lo que se ve en ese catálogo.
+- **`tienda/panel_tienda.html`** — Pedidos, Productos y Configuración (logo). Vive en el mismo sitio Netlify que el catálogo (`norteorigen.netlify.app/admin.html`), porque administra justamente lo que se ve en ese catálogo.
 - **`scraping/tablero_leads.html`** — el tablero de leads (kanban por estado, con el mensaje de WhatsApp editable antes de enviar). Vive en el sitio separado **pospreccion-losturquitos**, porque es prospección, no la tienda.
 
 Los archivos en `deploy/` son copias exactas de sus fuentes — cualquier cambio en `tienda/catalogo_los_turquitos.html`, `tienda/panel_tienda.html` o `scraping/tablero_leads.html` hay que copiarlo también a su archivo correspondiente en `deploy/` antes de subir. Netlify Drop no sigue una carpeta local automáticamente: para redeployar hay que arrastrar el contenido de `deploy/tienda/` al sitio **losturquitos** y el de `deploy/scraping/` al sitio **pospreccion-losturquitos**, cada uno por separado, desde el dashboard de Netlify (drag & drop sobre el sitio ya existente, no crear uno nuevo).
@@ -148,7 +148,7 @@ Correr **una vez** en el SQL Editor de Supabase: `supabase/supabase_add_producto
 
 Correr **una vez** `supabase/supabase_cuentas_y_seguridad.sql` (entero) en el SQL Editor de Supabase. Es re-ejecutable y **rehace todas las reglas de acceso** separando *administrador* de *cliente*: los usuarios que existen hoy en Authentication quedan como administradores; cualquier cuenta nueva es solo cliente. Hasta que se corra, el catálogo no muestra ningún botón de cuenta.
 
-En Supabase → *Authentication → URL Configuration*, poner **Site URL = https://losturquitos.netlify.app** (si no, los mails de confirmación y de "olvidé mi contraseña" apuntan a otro lado). En *Providers → Email* se puede desactivar "Confirm email" para que el registro entre directo.
+En Supabase → *Authentication → URL Configuration*, poner **Site URL = https://norteorigen.netlify.app** (si no, los mails de confirmación y de "olvidé mi contraseña" apuntan a otro lado). En *Providers → Email* se puede desactivar "Confirm email" para que el registro entre directo.
 
 - **Cuentas (catálogo):** registro libre y opcional (email + contraseña). Con cuenta: datos guardados que se completan solos en el pedido, historial en *Mi cuenta* y "Repetir este pedido". Sin cuenta se puede pedir igual.
 - **Administradores:** el panel y el tablero de leads solo dejan entrar a quien está en la tabla `admins`. Para sumar otro administrador: `insert into admins (user_id) select id from auth.users where email = 'mail@ejemplo.com';`
